@@ -1,0 +1,9 @@
+{
+  "name": "hamkke-server",
+  "version": "1.0.0",
+  "description": "study community service",
+  "main": "index.js",
+  "repository": "git@github.com:chipmunk-and-acorns/hamkke-final-server.git",
+  "author": "chipmunk-dev <devquokkajeong@gmail.com>",
+  "license": "MIT"
+}
