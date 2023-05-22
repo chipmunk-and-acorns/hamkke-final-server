@@ -63,3 +63,9 @@ docker-compose up
 ## Table Document
 
 <img src="./document/table_document.png" alt="테이블명세서">
+
+<br/>
+
+## ER-Diagram
+
+<img src="./document/er-diagram.png" alt="ERD">
