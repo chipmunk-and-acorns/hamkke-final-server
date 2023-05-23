@@ -261,4 +261,7 @@ tags
 # and uncomment the following lines
 # .pnp.*
 
+# jest
+coverage
+
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,git,yarn,vim,dotenv,node,react
