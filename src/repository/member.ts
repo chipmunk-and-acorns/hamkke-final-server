@@ -1,9 +1,10 @@
 import { dataSource } from '../db/db';
+import Member from '../entity/member';
 import { MemberPostDto } from '../types/member';
 
 const repository = dataSource.Member;
 
-export const saveMember = async (member: MemberPostDto) => {
+export const saveMember = async (member: MemberPostDto | Member) => {
   return await repository.save(member);
 };
 
