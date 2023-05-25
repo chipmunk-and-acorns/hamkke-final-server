@@ -1,11 +1,12 @@
 import * as express from 'express';
 import * as cors from 'cors';
 import * as morgan from 'morgan';
-import helmet from 'helmet';
 import * as swaggerUi from 'swagger-ui-express';
 import * as swaggerJsdoc from 'swagger-jsdoc';
+import helmet from 'helmet';
 
-import AppDataSource from './db/db';
+import rootRouter from './router';
+import { AppDataSource } from './db/db';
 import RedisClient from './db/redis';
 import SwaggerOptions from './config/swagger';
 import configVar from './config/configVariable';
@@ -22,6 +23,7 @@ app.use(morgan(configVar.server.morgan));
 app.use(helmet());
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(spec, { explorer: true }));
+app.use('/api', rootRouter);
 
 const initializeApp = async () => {
   try {
