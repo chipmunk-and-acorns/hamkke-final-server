@@ -4,6 +4,6 @@ import memberRouter from './member';
 
 const route = express.Router();
 
-route.use('/member', memberRouter);
+route.use('/members', memberRouter);
 
 export default route;
