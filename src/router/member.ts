@@ -1,6 +1,6 @@
 import * as express from 'express';
 
-import { registerAccount, login, logout, updateAccount, deleteAccount } from '../controller/member';
+import { registerAccount, login, logout, deleteAccount, updatePassword, updateNickname } from '../controller/member';
 
 const route = express.Router();
 
@@ -10,8 +10,10 @@ route.post('/register', registerAccount);
 route.post('/login', login);
 // logout
 route.post('/logout', logout);
-// update member information
-route.put('/:id', updateAccount);
+// update password
+route.put('/:id/password', updatePassword);
+// update nickname
+route.put('/:id/nickname', updateNickname);
 // delete
 route.delete('/:id', deleteAccount);
 
