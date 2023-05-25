@@ -4,6 +4,9 @@ import * as MemberRepository from '../repository/member';
 import { MemberPostDto } from '../types/member';
 import Member from '../entity/member';
 
+/**
+ * 회원가입
+ */
 export const registerAccount = async (request: Request, response: Response) => {
   const { username, password, nickname, birth } = request.body;
 
@@ -26,6 +29,9 @@ export const registerAccount = async (request: Request, response: Response) => {
   return response.status(201).json({ memberId: createMember.memberId, nickname: createMember.nickname });
 };
 
+/**
+ * 로그인
+ */
 export const login = async (request: Request, response: Response) => {
   const { username, password } = request.body;
   const findMember = await MemberRepository.findMemberByUsername(username);
@@ -47,6 +53,72 @@ export const login = async (request: Request, response: Response) => {
   return response.status(200).json({ memberId, nickname });
 };
 
-export const logout = async () => {};
-export const updateAccount = async () => {};
-export const deleteAccount = async () => {};
+/**
+ * 로그아웃
+ */
+export const logout = async (_request: Request, response: Response) => {
+  // TODO: token 제거
+  return response.sendStatus(204);
+};
+
+/**
+ * 비밀번호 변경
+ */
+export const updatePassword = async (request: Request, response: Response) => {
+  const { memberId } = request.params;
+  const { password, newPassword } = request.body;
+  const findMember = await MemberRepository.findMemberById(parseInt(memberId));
+  if (isEmpty(findMember)) {
+    return response.status(401).json({ message: '존재하지 않은 사용자입니다.' });
+  }
+
+  // TODO: bcrypt 적용후 코드 수정
+  if (password !== findMember.password) {
+    return response.status(401).json({ message: '비밀번호가 불일치합니다.' });
+  }
+
+  if (newPassword === findMember.password) {
+    return response.status(401).json({ message: '변경하려는 비밀번호가 이전 비밀번호와 일치합니다.' });
+  }
+
+  findMember.password = newPassword;
+  MemberRepository.saveMember(findMember);
+
+  return response.status(204);
+};
+
+/**
+ * 닉네임 변경
+ */
+export const updateNickname = async (request: Request, response: Response) => {
+  const { memberId } = request.params;
+  const { nickname } = request.body;
+  const findMember = await MemberRepository.findMemberById(parseInt(memberId));
+  if (isEmpty(findMember)) {
+    return response.status(401).json({ message: '존재하지 않은 사용자입니다.' });
+  }
+
+  if (nickname === findMember.nickname) {
+    return response.status(401).json({ message: '변경하려는 닉네임이 이전 닉네임과 동일합니다.' });
+  }
+
+  findMember.nickname = nickname;
+  MemberRepository.saveMember(findMember);
+
+  return response.status(200).json({ nickname });
+};
+
+/**
+ * 회원탈퇴
+ */
+export const deleteAccount = async (request: Request, response: Response) => {
+  const { memberId } = request.params;
+  const findMember = await MemberRepository.findMemberById(parseInt(memberId));
+  if (isEmpty(findMember)) {
+    return response.status(401).json({ message: '존재하지 않은 사용자입니다.' });
+  }
+
+  // TODO: redis에 해당 멤버의 refreshToken 삭제
+  await MemberRepository.deleteMemberById(parseInt(memberId));
+  return response.sendStatus(204);
+};
