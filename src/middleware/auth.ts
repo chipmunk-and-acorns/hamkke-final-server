@@ -19,7 +19,10 @@ export const authCheck = async (
 
   const decoded = verifyToken(accessToken, config.auth.jwt.secretKey);
 
-  if (typeGuard<{ memberId: number }>(decoded, 'memberId')) {
+  if (
+    !isEmpty(decoded) &&
+    typeGuard<{ memberId: number }>(decoded, 'memberId')
+  ) {
     const { memberId } = decoded;
     const findMember = await findMemberById(memberId);
 
