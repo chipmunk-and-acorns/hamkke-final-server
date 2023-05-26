@@ -23,5 +23,8 @@ export default {
       },
     ],
   },
-  apis: [path.join(__dirname, '..', '**', 'router', '*.ts'), path.join(__dirname, '..', '**', 'router', '*.js')],
+  apis: [
+    path.join(__dirname, '..', '**', 'router', '*.ts'),
+    path.join(__dirname, '..', '**', 'router', '*.js'),
+  ],
 };

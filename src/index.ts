@@ -22,7 +22,11 @@ app.use(cors());
 app.use(morgan(configVar.server.morgan));
 app.use(helmet());
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(spec, { explorer: true }));
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(spec, { explorer: true }),
+);
 app.use('/api', rootRouter);
 
 const initializeApp = async () => {

@@ -1,6 +1,14 @@
 import * as express from 'express';
 
-import { registerAccount, login, logout, deleteAccount, updatePassword, updateNickname } from '../controller/member';
+import {
+  registerAccount,
+  login,
+  logout,
+  deleteAccount,
+  updatePassword,
+  updateNickname,
+} from '../controller/member';
+import { authCheck } from '../middleware/auth';
 
 const route = express.Router();
 
@@ -174,7 +182,7 @@ route.post('/login', login);
  *       204:
  *         description: 로그아웃 성공
  */
-route.post('/logout', logout);
+route.post('/logout', authCheck, logout);
 /**
  * @swagger
  * tags:
@@ -213,7 +221,7 @@ route.post('/logout', logout);
  *       401:
  *         description: 존재하지 않은 사용자, 현재 비밀번호 불일치, 새로운 비밀번호가 이전비밀번호와 동일
  */
-route.patch('/:id/password', updatePassword);
+route.patch('/:id/password', authCheck, updatePassword);
 /**
  * @swagger
  * tags:
@@ -258,7 +266,7 @@ route.patch('/:id/password', updatePassword);
  *       401:
  *         description: 존재하지 않은 사용자, 현재 비밀번호 불일치, 새로운 비밀번호가 이전비밀번호와 동일
  */
-route.patch('/:id/nickname', updateNickname);
+route.patch('/:id/nickname', authCheck, updateNickname);
 /**
  * @swagger
  * tags:
@@ -281,6 +289,6 @@ route.patch('/:id/nickname', updateNickname);
  *       401:
  *         description: 존재하지 않은 사용자
  */
-route.delete('/:id', deleteAccount);
+route.delete('/:id', authCheck, deleteAccount);
 
 export default route;
