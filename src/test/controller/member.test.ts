@@ -21,7 +21,9 @@ import {
   saveMember,
 } from '../../repository/member';
 import { MemberPostDto } from '../../types/member';
+import { generateToken, hashPassword, matchPassword } from '../../util/auth';
 import Member from '../../entity/member';
+import redisClient from '../../db/redis';
 
 let mockRequest: MockRequest<Request>;
 let mockResponse: MockResponse<Response>;
@@ -43,6 +45,11 @@ beforeEach(() => {
   (findMemberByUsername as jest.Mock) = jest.fn();
   (saveMember as jest.Mock) = jest.fn();
   (deleteMemberById as jest.Mock) = jest.fn();
+  (hashPassword as jest.Mock) = jest.fn();
+  (generateToken as jest.Mock) = jest.fn();
+  (matchPassword as jest.Mock) = jest.fn();
+  (redisClient.set as jest.Mock) = jest.fn();
+  (redisClient.del as jest.Mock) = jest.fn();
   mockRequest = createRequest();
   mockResponse = createResponse();
 });
@@ -62,7 +69,9 @@ describe('[Controller] Member - Register', () => {
 
   test('회원가입을 성공하면 201코드와 메세지를 리턴한다.', async () => {
     (findMemberByUsername as jest.Mock).mockReturnValue(null);
+    (hashPassword as jest.Mock).mockReturnValue('hashPassword');
     (saveMember as jest.Mock).mockReturnValue(responseMemberMockData);
+    (generateToken as jest.Mock).mockReturnValue('tokenValue');
     const year = postMemberMockData.birth.getFullYear();
     const month = postMemberMockData.birth.getMonth();
     const day = postMemberMockData.birth.getDay();
@@ -80,6 +89,8 @@ describe('[Controller] Member - Register', () => {
     expect(mockResponse._getJSONData().nickname).toBe(
       responseMemberMockData.nickname,
     );
+    expect(mockResponse._getJSONData()).toHaveProperty('accessToken');
+    expect(mockResponse._getJSONData()).toHaveProperty('refreshToken');
   });
 });
 
@@ -105,9 +116,11 @@ describe('[Controller] Member - Login', () => {
       password: faker.internet.password(),
     };
     (findMemberByUsername as jest.Mock).mockReturnValue(responseMemberMockData);
+    (matchPassword as jest.Mock).mockResolvedValue(false);
 
     await login(mockRequest, mockResponse);
 
+    expect(matchPassword).toBeCalled();
     expect(mockResponse.statusCode).toBe(401);
     expect(mockResponse._getJSONData().message).toBe(
       '이메일 또는 암호가 일치하지 않습니다.',
@@ -120,6 +133,8 @@ describe('[Controller] Member - Login', () => {
       password: postMemberMockData.password,
     };
     (findMemberByUsername as jest.Mock).mockReturnValue(responseMemberMockData);
+    (matchPassword as jest.Mock).mockResolvedValue(true);
+    (generateToken as jest.Mock).mockReturnValue('tokenValue');
 
     await login(mockRequest, mockResponse);
 
@@ -130,20 +145,24 @@ describe('[Controller] Member - Login', () => {
     expect(mockResponse._getJSONData().nickname).toBe(
       responseMemberMockData.nickname,
     );
+    expect(mockResponse._getJSONData()).toHaveProperty('accessToken');
+    expect(mockResponse._getJSONData()).toHaveProperty('refreshToken');
   });
 });
 
 describe('[Controller] Member - Logout', () => {
   test('로그아웃 성공시 204를 리턴한다.', async () => {
+    mockResponse.locals.memberId = 1;
     await logout(mockRequest, mockResponse);
 
+    expect(redisClient.del).toBeCalled();
     expect(mockResponse.statusCode).toBe(204);
   });
 });
 
 describe('[Controller] Member - Update Password', () => {
   test('유효하지 않은 memberId일 경우 401을 리턴한다.', async () => {
-    mockRequest.params = {
+    mockResponse.locals = {
       memberId: faker.number.int().toString(),
     };
 
@@ -158,7 +177,8 @@ describe('[Controller] Member - Update Password', () => {
 
   test('현재 비밀번호가 일치하지 않을경우 401을 리턴한다.', async () => {
     (findMemberById as jest.Mock).mockReturnValue(responseMemberMockData);
-    mockRequest.params = {
+    (matchPassword as jest.Mock).mockResolvedValue(false);
+    mockResponse.locals = {
       memberId: responseMemberMockData.memberId.toString(),
     };
     mockRequest.body = {
@@ -176,8 +196,11 @@ describe('[Controller] Member - Update Password', () => {
 
   test('새로운 비밀번호와 현재 비밀번호가 같을경우 401을 리턴한다.', async () => {
     (findMemberById as jest.Mock).mockReturnValue(responseMemberMockData);
-    mockRequest.params = {
-      memberId: responseMemberMockData.memberId.toString(),
+    (matchPassword as jest.Mock).mockResolvedValueOnce(true);
+    (matchPassword as jest.Mock).mockResolvedValueOnce(true);
+
+    mockResponse.locals = {
+      memberId: faker.number.int().toString(),
     };
     mockRequest.body = {
       password: responseMemberMockData.password,
@@ -194,8 +217,10 @@ describe('[Controller] Member - Update Password', () => {
 
   test('비밀번호가 성공적으로 변경되면 204를 리턴한다.', async () => {
     (findMemberById as jest.Mock).mockReturnValue(responseMemberMockData);
-    mockRequest.params = {
-      memberId: responseMemberMockData.memberId.toString(),
+    (matchPassword as jest.Mock).mockResolvedValueOnce(true);
+    (matchPassword as jest.Mock).mockResolvedValueOnce(false);
+    mockResponse.locals = {
+      memberId: faker.number.int().toString(),
     };
     mockRequest.body = {
       password: responseMemberMockData.password,
@@ -211,7 +236,7 @@ describe('[Controller] Member - Update Password', () => {
 
 describe('[Controller] Member - Update Nickname', () => {
   test('유효하지 않은 memberId일 경우 401을 리턴한다.', async () => {
-    mockRequest.params = {
+    mockResponse.locals = {
       memberId: faker.number.int().toString(),
     };
 
@@ -226,8 +251,8 @@ describe('[Controller] Member - Update Nickname', () => {
 
   test('새로운 닉네임과 현재 닉네임이 동일하면 401을 리턴한다.', async () => {
     (findMemberById as jest.Mock).mockReturnValue(responseMemberMockData);
-    mockRequest.params = {
-      memberId: responseMemberMockData.memberId.toString(),
+    mockResponse.locals = {
+      memberId: faker.number.int().toString(),
     };
     mockRequest.body = {
       nickname: responseMemberMockData.nickname,
@@ -262,7 +287,7 @@ describe('[Controller] Member - Update Nickname', () => {
 
 describe('[Controller] Member - Delete Member', () => {
   test('유효하지 않은 memberId일 경우 401을 리턴한다.', async () => {
-    mockRequest.params = {
+    mockResponse.locals = {
       memberId: faker.number.int().toString(),
     };
 
@@ -277,8 +302,8 @@ describe('[Controller] Member - Delete Member', () => {
 
   test('회원탈퇴를 성공하면 204를 리턴받습니.', async () => {
     (findMemberById as jest.Mock).mockReturnValue(responseMemberMockData);
-    mockRequest.params = {
-      memberId: responseMemberMockData.memberId.toString(),
+    mockResponse.locals = {
+      memberId: faker.number.int().toString(),
     };
 
     await deleteAccount(mockRequest, mockResponse);
