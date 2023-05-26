@@ -300,7 +300,7 @@ describe('[Controller] Member - Delete Member', () => {
     );
   });
 
-  test('회원탈퇴를 성공하면 204를 리턴받습니.', async () => {
+  test('회원탈퇴를 성공하면 204를 리턴한다.', async () => {
     (findMemberById as jest.Mock).mockReturnValue(responseMemberMockData);
     mockResponse.locals = {
       memberId: faker.number.int().toString(),
