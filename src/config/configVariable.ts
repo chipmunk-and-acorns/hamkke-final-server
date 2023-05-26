@@ -31,4 +31,15 @@ export default {
     password: required('DB_PASSWORD'),
     database: required('DB_DATABASE'),
   },
+  auth: {
+    bcrypt: {
+      saltRounds: Number(required('BCRYPT_SALT_ROUNDS')),
+    },
+    jwt: {
+      secretKey: required('JWT_SECRET_KEY'),
+      refreshKey: required('JWT_REFRESH_KEY'),
+      accessExpiresIn: required('JWT_ACCESS_EXPIRES_IN'),
+      refreshExpiresIn: required('JWT_REFRESH_EXPIRES_IN'),
+    },
+  },
 };
