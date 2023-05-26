@@ -2,8 +2,9 @@ import * as path from 'path';
 import { DataSource } from 'typeorm';
 import 'reflect-metadata';
 import config from '../config/configVariable';
+import Member from '../entity/member';
 
-export default new DataSource({
+export const AppDataSource = new DataSource({
   type: config.db.type,
   host: config.db.host,
   port: config.db.port,
@@ -12,5 +13,9 @@ export default new DataSource({
   database: config.db.database,
   synchronize: true,
   logging: ['query', 'warn', 'error'],
-  entities: [path.join(__dirname, '..', 'data', '**/*.entity.ts')],
+  entities: [path.join(__dirname, '..', 'entity', '*.ts')],
 });
+
+export const dataSource = {
+  Member: AppDataSource.getRepository(Member),
+};
