@@ -20,13 +20,22 @@ export const registerAccount = async (request: Request, response: Response) => {
 
   // TODO: bcrypt로 비밀번호 암호화 하기
 
-  const postMemberData: MemberPostDto = { username, password, nickname, birth: birthDate };
-  const createMember: Member = await MemberRepository.saveMember(postMemberData);
+  const postMemberData: MemberPostDto = {
+    username,
+    password,
+    nickname,
+    birth: birthDate,
+  };
+  const createMember: Member = await MemberRepository.saveMember(
+    postMemberData,
+  );
 
   // TODO: jwt를 이용하여 Token을 발급
   // TODO: refresh Token을 redis에 저장
 
-  return response.status(201).json({ memberId: createMember.memberId, nickname: createMember.nickname });
+  return response
+    .status(201)
+    .json({ memberId: createMember.memberId, nickname: createMember.nickname });
 };
 
 /**
@@ -36,7 +45,9 @@ export const login = async (request: Request, response: Response) => {
   const { username, password } = request.body;
   const findMember = await MemberRepository.findMemberByUsername(username);
   const returnUnMatch = () => {
-    return response.status(401).json({ message: '이메일 또는 암호가 일치하지 않습니다.' });
+    return response
+      .status(401)
+      .json({ message: '이메일 또는 암호가 일치하지 않습니다.' });
   };
   if (isEmpty(findMember)) {
     return returnUnMatch();
@@ -69,7 +80,9 @@ export const updatePassword = async (request: Request, response: Response) => {
   const { password, newPassword } = request.body;
   const findMember = await MemberRepository.findMemberById(parseInt(memberId));
   if (isEmpty(findMember)) {
-    return response.status(401).json({ message: '존재하지 않은 사용자입니다.' });
+    return response
+      .status(401)
+      .json({ message: '존재하지 않은 사용자입니다.' });
   }
 
   // TODO: bcrypt 적용후 코드 수정
@@ -78,7 +91,9 @@ export const updatePassword = async (request: Request, response: Response) => {
   }
 
   if (newPassword === findMember.password) {
-    return response.status(401).json({ message: '변경하려는 비밀번호가 이전 비밀번호와 일치합니다.' });
+    return response
+      .status(401)
+      .json({ message: '변경하려는 비밀번호가 이전 비밀번호와 일치합니다.' });
   }
 
   findMember.password = newPassword;
@@ -95,11 +110,15 @@ export const updateNickname = async (request: Request, response: Response) => {
   const { nickname } = request.body;
   const findMember = await MemberRepository.findMemberById(parseInt(memberId));
   if (isEmpty(findMember)) {
-    return response.status(401).json({ message: '존재하지 않은 사용자입니다.' });
+    return response
+      .status(401)
+      .json({ message: '존재하지 않은 사용자입니다.' });
   }
 
   if (nickname === findMember.nickname) {
-    return response.status(401).json({ message: '변경하려는 닉네임이 이전 닉네임과 동일합니다.' });
+    return response
+      .status(401)
+      .json({ message: '변경하려는 닉네임이 이전 닉네임과 동일합니다.' });
   }
 
   findMember.nickname = nickname;
@@ -115,7 +134,9 @@ export const deleteAccount = async (request: Request, response: Response) => {
   const { memberId } = request.params;
   const findMember = await MemberRepository.findMemberById(parseInt(memberId));
   if (isEmpty(findMember)) {
-    return response.status(401).json({ message: '존재하지 않은 사용자입니다.' });
+    return response
+      .status(401)
+      .json({ message: '존재하지 않은 사용자입니다.' });
   }
 
   // TODO: redis에 해당 멤버의 refreshToken 삭제

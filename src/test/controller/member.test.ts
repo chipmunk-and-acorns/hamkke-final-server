@@ -1,8 +1,25 @@
 import { Request, Response } from 'express';
-import { createRequest, createResponse, MockRequest, MockResponse } from 'node-mocks-http';
+import {
+  createRequest,
+  createResponse,
+  MockRequest,
+  MockResponse,
+} from 'node-mocks-http';
 import { faker } from '@faker-js/faker';
-import { deleteAccount, login, logout, registerAccount, updateNickname, updatePassword } from '../../controller/member';
-import { deleteMemberById, findMemberById, findMemberByUsername, saveMember } from '../../repository/member';
+import {
+  deleteAccount,
+  login,
+  logout,
+  registerAccount,
+  updateNickname,
+  updatePassword,
+} from '../../controller/member';
+import {
+  deleteMemberById,
+  findMemberById,
+  findMemberByUsername,
+  saveMember,
+} from '../../repository/member';
 import { MemberPostDto } from '../../types/member';
 import Member from '../../entity/member';
 
@@ -38,7 +55,9 @@ describe('[Controller] Member - Register', () => {
 
     expect(findMemberByUsername).toBeCalled();
     expect(mockResponse.statusCode).toBe(409);
-    expect(mockResponse._getJSONData().message).toBe('이미 존하는 이메일입니다.');
+    expect(mockResponse._getJSONData().message).toBe(
+      '이미 존하는 이메일입니다.',
+    );
   });
 
   test('회원가입을 성공하면 201코드와 메세지를 리턴한다.', async () => {
@@ -55,41 +74,62 @@ describe('[Controller] Member - Register', () => {
     await registerAccount(mockRequest, mockResponse);
 
     expect(mockResponse.statusCode).toBe(201);
-    expect(mockResponse._getJSONData().memberId).toBe(responseMemberMockData.memberId);
-    expect(mockResponse._getJSONData().nickname).toBe(responseMemberMockData.nickname);
+    expect(mockResponse._getJSONData().memberId).toBe(
+      responseMemberMockData.memberId,
+    );
+    expect(mockResponse._getJSONData().nickname).toBe(
+      responseMemberMockData.nickname,
+    );
   });
 });
 
 describe('[Controller] Member - Login', () => {
   test('이메일이 존재하지 않으면 401을 리턴한다.', async () => {
-    mockRequest.body = { username: postMemberMockData.username, password: postMemberMockData.password };
+    mockRequest.body = {
+      username: postMemberMockData.username,
+      password: postMemberMockData.password,
+    };
 
     await login(mockRequest, mockResponse);
 
     expect(findMemberByUsername).toBeCalled();
     expect(mockResponse.statusCode).toBe(401);
-    expect(mockResponse._getJSONData().message).toBe('이메일 또는 암호가 일치하지 않습니다.');
+    expect(mockResponse._getJSONData().message).toBe(
+      '이메일 또는 암호가 일치하지 않습니다.',
+    );
   });
 
   test('password가 다르면 401을 리턴한다.', async () => {
-    mockRequest.body = { username: postMemberMockData.username, password: faker.internet.password() };
+    mockRequest.body = {
+      username: postMemberMockData.username,
+      password: faker.internet.password(),
+    };
     (findMemberByUsername as jest.Mock).mockReturnValue(responseMemberMockData);
 
     await login(mockRequest, mockResponse);
 
     expect(mockResponse.statusCode).toBe(401);
-    expect(mockResponse._getJSONData().message).toBe('이메일 또는 암호가 일치하지 않습니다.');
+    expect(mockResponse._getJSONData().message).toBe(
+      '이메일 또는 암호가 일치하지 않습니다.',
+    );
   });
 
   test('로그인에 성공하면 200코드와 유저정보를 리턴한다.', async () => {
-    mockRequest.body = { username: postMemberMockData.username, password: postMemberMockData.password };
+    mockRequest.body = {
+      username: postMemberMockData.username,
+      password: postMemberMockData.password,
+    };
     (findMemberByUsername as jest.Mock).mockReturnValue(responseMemberMockData);
 
     await login(mockRequest, mockResponse);
 
     expect(mockResponse.statusCode).toBe(200);
-    expect(mockResponse._getJSONData().memberId).toBe(responseMemberMockData.memberId);
-    expect(mockResponse._getJSONData().nickname).toBe(responseMemberMockData.nickname);
+    expect(mockResponse._getJSONData().memberId).toBe(
+      responseMemberMockData.memberId,
+    );
+    expect(mockResponse._getJSONData().nickname).toBe(
+      responseMemberMockData.nickname,
+    );
   });
 });
 
@@ -111,7 +151,9 @@ describe('[Controller] Member - Update Password', () => {
 
     expect(findMemberById).toBeCalled();
     expect(mockResponse.statusCode).toBe(401);
-    expect(mockResponse._getJSONData().message).toBe('존재하지 않은 사용자입니다.');
+    expect(mockResponse._getJSONData().message).toBe(
+      '존재하지 않은 사용자입니다.',
+    );
   });
 
   test('현재 비밀번호가 일치하지 않을경우 401을 리턴한다.', async () => {
@@ -127,7 +169,9 @@ describe('[Controller] Member - Update Password', () => {
     await updatePassword(mockRequest, mockResponse);
 
     expect(mockResponse.statusCode).toBe(401);
-    expect(mockResponse._getJSONData().message).toBe('비밀번호가 불일치합니다.');
+    expect(mockResponse._getJSONData().message).toBe(
+      '비밀번호가 불일치합니다.',
+    );
   });
 
   test('새로운 비밀번호와 현재 비밀번호가 같을경우 401을 리턴한다.', async () => {
@@ -143,7 +187,9 @@ describe('[Controller] Member - Update Password', () => {
     await updatePassword(mockRequest, mockResponse);
 
     expect(mockResponse.statusCode).toBe(401);
-    expect(mockResponse._getJSONData().message).toBe('변경하려는 비밀번호가 이전 비밀번호와 일치합니다.');
+    expect(mockResponse._getJSONData().message).toBe(
+      '변경하려는 비밀번호가 이전 비밀번호와 일치합니다.',
+    );
   });
 
   test('비밀번호가 성공적으로 변경되면 204를 리턴한다.', async () => {
@@ -173,7 +219,9 @@ describe('[Controller] Member - Update Nickname', () => {
 
     expect(findMemberById).toBeCalled();
     expect(mockResponse.statusCode).toBe(401);
-    expect(mockResponse._getJSONData().message).toBe('존재하지 않은 사용자입니다.');
+    expect(mockResponse._getJSONData().message).toBe(
+      '존재하지 않은 사용자입니다.',
+    );
   });
 
   test('새로운 닉네임과 현재 닉네임이 동일하면 401을 리턴한다.', async () => {
@@ -188,7 +236,9 @@ describe('[Controller] Member - Update Nickname', () => {
     await updateNickname(mockRequest, mockResponse);
 
     expect(mockResponse.statusCode).toBe(401);
-    expect(mockResponse._getJSONData().message).toBe('변경하려는 닉네임이 이전 닉네임과 동일합니다.');
+    expect(mockResponse._getJSONData().message).toBe(
+      '변경하려는 닉네임이 이전 닉네임과 동일합니다.',
+    );
   });
 
   test('닉네임을 성공적으로 변경하면 200을 리턴한다.', async () => {
@@ -203,7 +253,9 @@ describe('[Controller] Member - Update Nickname', () => {
     await updateNickname(mockRequest, mockResponse);
 
     expect(mockResponse.statusCode).toBe(200);
-    expect(mockResponse._getJSONData().nickname).toBe(mockRequest.body.nickname);
+    expect(mockResponse._getJSONData().nickname).toBe(
+      mockRequest.body.nickname,
+    );
     expect(responseMemberMockData.nickname).toBe(mockRequest.body.nickname);
   });
 });
@@ -218,7 +270,9 @@ describe('[Controller] Member - Delete Member', () => {
 
     expect(findMemberById).toBeCalled();
     expect(mockResponse.statusCode).toBe(401);
-    expect(mockResponse._getJSONData().message).toBe('존재하지 않은 사용자입니다.');
+    expect(mockResponse._getJSONData().message).toBe(
+      '존재하지 않은 사용자입니다.',
+    );
   });
 
   test('회원탈퇴를 성공하면 204를 리턴받습니.', async () => {

@@ -1,6 +1,13 @@
 import * as express from 'express';
 
-import { registerAccount, login, logout, deleteAccount, updatePassword, updateNickname } from '../controller/member';
+import {
+  registerAccount,
+  login,
+  logout,
+  deleteAccount,
+  updatePassword,
+  updateNickname,
+} from '../controller/member';
 
 const route = express.Router();
 
