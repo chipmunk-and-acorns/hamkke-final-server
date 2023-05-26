@@ -1,5 +1,5 @@
 import { compare, genSalt, hash } from 'bcrypt';
-import { sign } from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
 
 type Payload = { memberId: number };
 
@@ -25,4 +25,8 @@ export const generateToken = (
   expiresIn: string | number,
 ) => {
   return sign(payload, secretKey, { expiresIn });
+};
+
+export const verifyToken = (token: string, secretKey: string) => {
+  return verify(token, secretKey);
 };
