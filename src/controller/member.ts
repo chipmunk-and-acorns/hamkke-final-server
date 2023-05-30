@@ -12,6 +12,7 @@ const generateAccessRefreshToken = (payload: { memberId: number }) => {
     config.auth.jwt;
   const accessToken = generateToken(payload, secretKey, accessExpiresIn);
   const refreshToken = generateToken(payload, refreshKey, refreshExpiresIn);
+
   return { accessToken, refreshToken };
 };
 
@@ -20,12 +21,12 @@ const generateAccessRefreshToken = (payload: { memberId: number }) => {
  */
 export const registerAccount = async (request: Request, response: Response) => {
   const { username, password, nickname, birth } = request.body;
-  const findMember = MemberRepository.findMemberByUsername(username);
+
+  const findMember = await MemberRepository.findMemberByUsername(username);
 
   if (!isEmpty(findMember)) {
     return response.status(409).json({ message: '이미 존하는 이메일입니다.' });
   }
-
   const [year, month, day] = birth;
   const birthDate = new Date(year, month, day);
   const hashingPassword = await hashPassword(
@@ -75,7 +76,9 @@ export const login = async (request: Request, response: Response) => {
     return returnUnMatch();
   }
 
-  if (!(await matchPassword(password, findMember.password))) {
+  const isMatch = await matchPassword(password, findMember.password);
+
+  if (!isMatch) {
     return returnUnMatch();
   }
 
@@ -108,7 +111,7 @@ export const logout = async (_request: Request, response: Response) => {
 
   await redisClient.del(memberId.toString());
   await redisClient.set(`dead:${memberId}`, 'logout-member');
-  await redisClient.expire(`dead:${memberId}`, 3600);
+  await redisClient.expire(`dead:${memberId}`, config.redis.deadZoneExpire);
 
   return response.sendStatus(204);
 };
