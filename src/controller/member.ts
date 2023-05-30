@@ -85,6 +85,16 @@ export const login = async (request: Request, response: Response) => {
 
   await redisClient.set(memberId.toString(), refreshToken);
 
+  /**
+   * Info: 로그아웃 후 accessToken이 유효한 시점(redis의 deadzone에 정보가 있을경우)
+   * 해당 정보를 deadzone에서 삭제 함 (인증을 통과하기 위해)
+   */
+  const findDeadZoneInfo = await redisClient.get(`dead:${memberId}`);
+
+  if (findDeadZoneInfo != null) {
+    await redisClient.del(`dead:${memberId}`);
+  }
+
   return response
     .status(200)
     .json({ memberId, nickname, accessToken, refreshToken });
@@ -97,6 +107,8 @@ export const logout = async (_request: Request, response: Response) => {
   const { memberId } = response.locals;
 
   await redisClient.del(memberId.toString());
+  await redisClient.set(`dead:${memberId}`, 'logout-member');
+  await redisClient.expire(`dead:${memberId}`, 3600);
 
   return response.sendStatus(204);
 };
@@ -114,7 +126,6 @@ export const updatePassword = async (request: Request, response: Response) => {
       .json({ message: '존재하지 않은 사용자입니다.' });
   }
 
-  // TODO: bcrypt 적용후 코드 수정
   if (!(await matchPassword(password, findMember.password))) {
     return response.status(401).json({ message: '비밀번호가 불일치합니다.' });
   }

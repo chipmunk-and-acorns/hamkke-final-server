@@ -10,6 +10,7 @@ import {
 import { authCheck } from '../../middleware/auth';
 import { verifyToken } from '../../util/auth';
 import { findMemberById } from '../../repository/member';
+import redisClient from '../../db/redis';
 
 describe('[Middleware] Auth', () => {
   let mockRequest: MockRequest<Request>;
@@ -19,6 +20,7 @@ describe('[Middleware] Auth', () => {
   beforeEach(() => {
     (verifyToken as jest.Mock) = jest.fn();
     (findMemberById as jest.Mock) = jest.fn();
+    (redisClient.get as jest.Mock) = jest.fn();
     mockRequest = createRequest();
     mockResponse = createResponse();
     mockNext = jest.fn();
@@ -58,6 +60,25 @@ describe('[Middleware] Auth', () => {
       '유효하지 않은 Token입니다.',
     );
   });
+
+  test('memberId가 deadzone에 등록되어있으면 403을 리턴합니다.', async () => {
+    const memberId = faker.number.int();
+    mockRequest.headers.authorization = 'Bearer accessToken';
+    (verifyToken as jest.Mock).mockReturnValue({
+      memberId,
+    });
+    (findMemberById as jest.Mock).mockResolvedValue({ memberId });
+    (redisClient.get as jest.Mock).mockResolvedValue('dead-user');
+
+    await authCheck(mockRequest, mockResponse, mockNext);
+
+    expect(redisClient.get).toBeCalled();
+    expect(mockResponse.statusCode).toBe(403);
+    expect(mockResponse._getJSONData().message).toBe(
+      '유효하지 않은 Token입니다.',
+    );
+  });
+
   test('accessToken으로 authCheck를 통과하면 next함수를 호출한다.', async () => {
     const memberId = faker.number.int();
     mockRequest.headers.authorization = 'Bearer accessToken';
