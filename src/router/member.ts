@@ -9,6 +9,11 @@ import {
   updateNickname,
 } from '../controller/member';
 import { authCheck } from '../middleware/auth';
+import {
+  registerValidation,
+  updateNicknameValidation,
+  updatePasswordValidation,
+} from '../middleware/validation/member';
 
 const route = express.Router();
 
@@ -115,7 +120,7 @@ const route = express.Router();
  *       409:
  *         description: 이메일 중복
  */
-route.post('/register', registerAccount);
+route.post('/register', registerValidation(), registerAccount);
 /**
  * @swagger
  * tags:
@@ -221,7 +226,12 @@ route.post('/logout', authCheck, logout);
  *       401:
  *         description: 존재하지 않은 사용자, 현재 비밀번호 불일치, 새로운 비밀번호가 이전비밀번호와 동일
  */
-route.patch('/:id/password', authCheck, updatePassword);
+route.patch(
+  '/:id/password',
+  authCheck,
+  updatePasswordValidation(),
+  updatePassword,
+);
 /**
  * @swagger
  * tags:
@@ -266,7 +276,12 @@ route.patch('/:id/password', authCheck, updatePassword);
  *       401:
  *         description: 존재하지 않은 사용자, 현재 비밀번호 불일치, 새로운 비밀번호가 이전비밀번호와 동일
  */
-route.patch('/:id/nickname', authCheck, updateNickname);
+route.patch(
+  '/:id/nickname',
+  authCheck,
+  updateNicknameValidation(),
+  updateNickname,
+);
 /**
  * @swagger
  * tags:
