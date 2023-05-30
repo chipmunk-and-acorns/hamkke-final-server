@@ -48,8 +48,10 @@ beforeEach(() => {
   (hashPassword as jest.Mock) = jest.fn();
   (generateToken as jest.Mock) = jest.fn();
   (matchPassword as jest.Mock) = jest.fn();
+  (redisClient.get as jest.Mock) = jest.fn();
   (redisClient.set as jest.Mock) = jest.fn();
   (redisClient.del as jest.Mock) = jest.fn();
+  (redisClient.expire as jest.Mock) = jest.fn();
   mockRequest = createRequest();
   mockResponse = createResponse();
 });
@@ -127,6 +129,22 @@ describe('[Controller] Member - Login', () => {
     );
   });
 
+  test('deadzone에 로그인유저 정보가 있을경우 해당 정보를 삭제한다.', async () => {
+    mockRequest.body = {
+      username: postMemberMockData.username,
+      password: postMemberMockData.password,
+    };
+    (findMemberByUsername as jest.Mock).mockReturnValue(responseMemberMockData);
+    (matchPassword as jest.Mock).mockResolvedValue(true);
+    (generateToken as jest.Mock).mockReturnValue('tokenValue');
+    (redisClient.get as jest.Mock).mockResolvedValue('dead-user');
+
+    await login(mockRequest, mockResponse);
+
+    expect(redisClient.get).toBeCalled();
+    expect(redisClient.del).toBeCalled();
+  });
+
   test('로그인에 성공하면 200코드와 유저정보를 리턴한다.', async () => {
     mockRequest.body = {
       username: postMemberMockData.username,
@@ -138,6 +156,7 @@ describe('[Controller] Member - Login', () => {
 
     await login(mockRequest, mockResponse);
 
+    expect(redisClient.del).not.toBeCalled();
     expect(mockResponse.statusCode).toBe(200);
     expect(mockResponse._getJSONData().memberId).toBe(
       responseMemberMockData.memberId,
@@ -151,6 +170,14 @@ describe('[Controller] Member - Login', () => {
 });
 
 describe('[Controller] Member - Logout', () => {
+  test('로그아웃시 deadZone에 accessToken을 추가한다.', async () => {
+    mockResponse.locals.memberId = 1;
+    await logout(mockRequest, mockResponse);
+    expect(redisClient.set).toBeCalled();
+    expect(redisClient.del).toBeCalled();
+    expect(redisClient.expire).toBeCalled();
+  });
+
   test('로그아웃 성공시 204를 리턴한다.', async () => {
     mockResponse.locals.memberId = 1;
     await logout(mockRequest, mockResponse);
