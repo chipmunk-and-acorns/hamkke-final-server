@@ -4,6 +4,7 @@ import config from '../config/configVariable';
 import { isEmpty } from 'lodash';
 import { findMemberById } from '../repository/member';
 import { typeGuard } from '../util/typeGuard';
+import redisClient from '../db/redis';
 
 export const authCheck = async (
   request: Request,
@@ -27,6 +28,13 @@ export const authCheck = async (
     const findMember = await findMemberById(memberId);
 
     if (isEmpty(findMember)) {
+      return response
+        .status(403)
+        .json({ message: '유효하지 않은 Token입니다.' });
+    }
+
+    const deadTokenValue = await redisClient.get(`dead:${memberId}`);
+    if (!isEmpty(deadTokenValue)) {
       return response
         .status(403)
         .json({ message: '유효하지 않은 Token입니다.' });
