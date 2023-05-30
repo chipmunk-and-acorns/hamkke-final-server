@@ -31,6 +31,9 @@ export default {
     password: required('DB_PASSWORD'),
     database: required('DB_DATABASE'),
   },
+  redis: {
+    deadZoneExpire: Number(required('REDIS_DEAD_EXPIRE')),
+  },
   auth: {
     bcrypt: {
       saltRounds: Number(required('BCRYPT_SALT_ROUNDS')),
