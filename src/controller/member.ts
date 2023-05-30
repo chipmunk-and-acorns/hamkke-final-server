@@ -27,7 +27,7 @@ export const registerAccount = async (request: Request, response: Response) => {
   if (!isEmpty(findMember)) {
     return response.status(409).json({ message: '이미 존하는 이메일입니다.' });
   }
-  const [year, month, day] = birth;
+  const [year, month, day] = birth.split('/');
   const birthDate = new Date(year, month, day);
   const hashingPassword = await hashPassword(
     config.auth.bcrypt.saltRounds,
@@ -139,10 +139,13 @@ export const updatePassword = async (request: Request, response: Response) => {
       .json({ message: '변경하려는 비밀번호가 이전 비밀번호와 일치합니다.' });
   }
 
-  findMember.password = newPassword;
-  MemberRepository.saveMember(findMember);
+  findMember.password = await hashPassword(
+    config.auth.bcrypt.saltRounds,
+    newPassword,
+  );
+  await MemberRepository.saveMember(findMember);
 
-  return response.status(204);
+  return response.sendStatus(204);
 };
 
 /**
@@ -165,7 +168,7 @@ export const updateNickname = async (request: Request, response: Response) => {
   }
 
   findMember.nickname = nickname;
-  MemberRepository.saveMember(findMember);
+  await MemberRepository.saveMember(findMember);
 
   return response.status(200).json({ nickname });
 };

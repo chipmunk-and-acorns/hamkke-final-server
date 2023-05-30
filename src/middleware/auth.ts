@@ -41,7 +41,7 @@ export const authCheck = async (
     }
 
     response.locals.memberId = memberId;
-    next();
+    return next();
   }
 
   return response.status(403).json({ message: '유효하지 않은 Token입니다.' });

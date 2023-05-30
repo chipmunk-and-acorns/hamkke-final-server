@@ -79,7 +79,7 @@ describe('[Controller] Member - Register', () => {
     const day = postMemberMockData.birth.getDay();
     mockRequest.body = {
       ...postMemberMockData,
-      birth: [year, month, day],
+      birth: `${year}/${month}/${day}`,
     };
 
     await registerAccount(mockRequest, mockResponse);
@@ -257,7 +257,10 @@ describe('[Controller] Member - Update Password', () => {
     await updatePassword(mockRequest, mockResponse);
 
     expect(mockResponse.statusCode).toBe(204);
-    expect(responseMemberMockData.password).toBe(mockRequest.body.newPassword);
+    expect(responseMemberMockData.password).not.toBe(mockRequest.body.password);
+    expect(responseMemberMockData.password).not.toBe(
+      mockRequest.body.newPassword,
+    );
   });
 });
 
