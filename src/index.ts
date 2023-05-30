@@ -3,6 +3,7 @@ import * as cors from 'cors';
 import * as morgan from 'morgan';
 import * as swaggerUi from 'swagger-ui-express';
 import * as swaggerJsdoc from 'swagger-jsdoc';
+import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 
 import rootRouter from './router';
@@ -28,6 +29,16 @@ app.use(
   swaggerUi.setup(spec, { explorer: true }),
 );
 app.use('/api', rootRouter);
+app.use(
+  (error: any, _request: Request, response: Response, _next: NextFunction) => {
+    console.error(error);
+
+    return response.status(500).json({
+      message: '서버에러가 발생했습니다. 잠시후 다시 시도해주세요.',
+      error,
+    });
+  },
+);
 
 const initializeApp = async () => {
   try {
