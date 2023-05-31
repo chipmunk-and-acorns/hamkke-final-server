@@ -4,10 +4,11 @@
     "target": "es2016",
     "module": "CommonJS",
     "resolveJsonModule": true,
-
-    /* Emit */
     "outDir": "./dist",
-    "esModuleInterop": true,
+    "declaration": true,
+    "esModuleInterop": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitAny": true,
@@ -23,5 +24,12 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "src/**/*.test.ts"],
+  "exclude": [
+    "node_modules",
+    "src/**/*.test.ts",
+    "./coverage",
+    "./dist",
+    "__tests__",
+    "jest.config"
+  ]
 }
