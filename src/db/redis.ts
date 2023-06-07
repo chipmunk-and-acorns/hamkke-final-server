@@ -1,6 +1,14 @@
 import * as redis from 'redis';
+import config from '../config/configVariable';
 
-const redisClient = redis.createClient();
+const redisClientOptions = {
+  socket: {
+    host: config.redis.host,
+    port: config.redis.port,
+  },
+};
+
+const redisClient = redis.createClient(redisClientOptions);
 
 redisClient.on('error', (error) => {
   console.error(error);
