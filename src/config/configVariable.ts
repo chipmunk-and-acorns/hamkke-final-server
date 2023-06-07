@@ -7,7 +7,7 @@ dotenv.config({
 });
 
 // INFO: 환경변수 key를 받아 값이 있는지 확인하는 함수
-const required = (key: string, defaultValue?: any) => {
+const required = (key: string, defaultValue?: any): string => {
   const value = process.env[key] || defaultValue;
 
   if (value == undefined) {
@@ -24,14 +24,15 @@ export default {
     morgan: required('MORGAN'),
   },
   db: {
-    type: required('DB_TYPE'),
     host: required('DB_HOST'),
-    port: required('DB_PORT'),
+    port: Number(required('DB_PORT')),
     username: required('DB_USERNAME'),
     password: required('DB_PASSWORD'),
     database: required('DB_DATABASE'),
   },
   redis: {
+    host: required('REDIS_HOST'),
+    port: Number(required('REDIS_PORT')),
     deadZoneExpire: Number(required('REDIS_DEAD_EXPIRE')),
   },
   auth: {
