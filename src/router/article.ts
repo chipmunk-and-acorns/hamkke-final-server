@@ -65,6 +65,12 @@ const route = express.Router();
  *         link:
  *           type: string
  *           description: 연락 링크
+ *         member:
+ *           $ref: '#/components/schemas/Member'
+ *         comments:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Comment'
  *         createdAt:
  *           type: string
  *           format: date
@@ -84,6 +90,8 @@ const route = express.Router();
  *         dueDate: Mon Jun 19 2023 14:50:32 GMT+0900 (한국 표준시)
  *         contact: kakao
  *         link: http://shalashala.com
+ *         member: 유저정보(오브젝트)
+ *         comments: 댓글정보(배열)
  *         createdAt: Thu Jun 01 2023 00:00:00 GMT+0900 (한국 표준시)
  *         modifiedAt: Mon Jun 05 2023 00:00:00 GMT+0900 (한국 표준시)
  */
