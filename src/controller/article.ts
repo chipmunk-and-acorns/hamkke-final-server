@@ -181,6 +181,7 @@ export const updateArticle = async (request: Request, response: Response) => {
   }
 };
 
+// delete
 export const deleteArticle = async (request: Request, response: Response) => {
   const { id } = request.params;
   const { memberId } = response.locals;

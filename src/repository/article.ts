@@ -20,6 +20,6 @@ export const findArticleById = async (
 
 // export const findArticleByMemberId = async () => {};
 
-export const deleteArticle = async (article: Article) => {
+export const removeArticle = async (article: Article) => {
   return await repository.remove(article);
 };
