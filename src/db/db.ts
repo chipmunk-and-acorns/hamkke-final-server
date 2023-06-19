@@ -6,6 +6,7 @@ import Member from '../entity/member';
 import Article from '../entity/article';
 import Stack from '../entity/stack';
 import Position from '../entity/position';
+import Comment from '../entity/comment';
 
 const mysqlOptions: DataSourceOptions = {
   type: 'mysql',
@@ -24,6 +25,7 @@ export const AppDataSource = new DataSource(mysqlOptions);
 export const dataSource = {
   Member: AppDataSource.getRepository(Member),
   Article: AppDataSource.getRepository(Article),
+  Comment: AppDataSource.getRepository(Comment),
   Stack: AppDataSource.getRepository(Stack),
   Position: AppDataSource.getRepository(Position),
 };

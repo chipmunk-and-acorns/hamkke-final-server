@@ -68,7 +68,7 @@ const route = express.Router();
  *         createdAt:
  *           type: string
  *           format: date
- *           description: 가입 일자
+ *           description: 작성 일자
  *         modifiedAt:
  *           type: string
  *           format: date
