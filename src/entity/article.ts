@@ -1,4 +1,5 @@
 import {
+  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
@@ -22,7 +23,7 @@ import Position from './position';
 
 @Entity('articles')
 export default class Article {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('increment')
   articleId!: number;
 
   @Column('varchar', { nullable: false, length: 1000 })
@@ -52,6 +53,9 @@ export default class Article {
   @Column({ type: 'varchar', name: 'link', nullable: false })
   link!: string;
 
+  @Column({ type: 'boolean', name: 'complete' })
+  complete!: boolean;
+
   // Relation
   @ManyToOne(() => Member, (member) => member.articles)
   @JoinColumn({ name: 'memberId' })
@@ -70,6 +74,9 @@ export default class Article {
   stacks!: Stack[];
 
   @ManyToMany(() => Position)
+  @JoinTable({
+    name: 'article_positions',
+  })
   positions!: Position[];
 
   @CreateDateColumn({ nullable: false })
@@ -77,4 +84,9 @@ export default class Article {
 
   @UpdateDateColumn({ nullable: false })
   modifiedAt!: Date;
+
+  @BeforeInsert()
+  beforeInsertActions() {
+    this.complete = false;
+  }
 }

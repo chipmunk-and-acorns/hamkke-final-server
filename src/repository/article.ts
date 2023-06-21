@@ -13,7 +13,7 @@ export const findArticles = async (relations: string[] = []) => {
 
 export const findArticleById = async (
   articleId: number,
-  relations: string[] = [],
+  relations?: string[],
 ) => {
   return await repository.findOne({ where: { articleId }, relations });
 };

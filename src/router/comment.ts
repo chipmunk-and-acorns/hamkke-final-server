@@ -171,7 +171,7 @@ route.get('/', getComments);
  *       500:
  *         description: 서버 에러
  */
-route.patch('/', authCheck, updateCommentValidation(), updateComment);
+route.patch('/:id', authCheck, updateCommentValidation(), updateComment);
 
 /**
  * @swagger
@@ -195,4 +195,6 @@ route.patch('/', authCheck, updateCommentValidation(), updateComment);
  *       500:
  *         description: 서버 에러
  */
-route.delete('/', authCheck, deleteComment);
+route.delete('/:id', authCheck, deleteComment);
+
+export default route;

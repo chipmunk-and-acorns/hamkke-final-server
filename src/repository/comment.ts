@@ -8,7 +8,7 @@ export const saveComment = async (comment: Comment) => {
 };
 
 export const findComments = async () => {
-  return await repository.find({ relations: ['members'] });
+  return await repository.find({ relations: ['member'] });
 };
 
 export const findCommentById = async (

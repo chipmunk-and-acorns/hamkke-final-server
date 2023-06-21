@@ -32,6 +32,8 @@ export const createArticle = async (request: Request, response: Response) => {
   } = request.body;
   const { memberId } = response.locals;
 
+  console.log(dueDate);
+
   try {
     const member = await findMemberById(memberId);
     const newArticle = new Article();
@@ -186,7 +188,7 @@ export const deleteArticle = async (request: Request, response: Response) => {
   const { id } = request.params;
   const { memberId } = response.locals;
   try {
-    const findArticle = await findArticleById(parseInt(id), ['members']);
+    const findArticle = await findArticleById(parseInt(id), ['member']);
 
     if (isEmpty(findArticle)) {
       return response.status(400).json({ message: '존재하지 않는 ID입니다.' });
