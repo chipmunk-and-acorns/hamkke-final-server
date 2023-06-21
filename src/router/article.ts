@@ -5,6 +5,7 @@ import {
   getArticle,
   updateArticle,
   deleteArticle,
+  completeArticle,
 } from '../controller/article';
 
 import { authCheck } from '../middleware/auth';
@@ -65,6 +66,9 @@ const route = express.Router();
  *         link:
  *           type: string
  *           description: 연락 링크
+ *         complete:
+ *           type: boolean
+ *           description: 모집 마감 유무
  *         member:
  *           $ref: '#/components/schemas/Member'
  *         comments:
@@ -90,6 +94,7 @@ const route = express.Router();
  *         dueDate: Mon Jun 19 2023 14:50:32 GMT+0900 (한국 표준시)
  *         contact: kakao
  *         link: http://shalashala.com
+ *         complete: true
  *         member: 유저정보(오브젝트)
  *         comments: 댓글정보(배열)
  *         createdAt: Thu Jun 01 2023 00:00:00 GMT+0900 (한국 표준시)
@@ -291,6 +296,53 @@ route.get('/:id', getArticle);
  *         description: 서버 에러
  */
 route.put('/:id', authCheck, articleValidation(), updateArticle);
+/**
+ * @swagger
+ * tags:
+ *   name: Article
+ *   description: 게시글 API
+ * /api/articles/{id}:
+ *   patch:
+ *     summary: 게시글 모집 완료
+ *     tags: [Article]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: 게시글 PK 아이디
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               complete:
+ *                 type: boolean
+ *                 description: 모집 마감 유무
+ *     responses:
+ *       200:
+ *         description: 게시글 모집 상태 변경 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Article'
+ *       400:
+ *         description: 유효성 검사 실패
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: 서버 에러
+ */
+route.patch('/:id', authCheck, articleValidation(), completeArticle);
 /**
  * @swagger
  * tags:

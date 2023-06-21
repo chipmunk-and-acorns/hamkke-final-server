@@ -32,3 +32,8 @@ export const articleValidation = () => [
   body('link').trim().notEmpty().withMessage('연락 링크가 비어있습니다.'),
   validErrorHandler,
 ];
+
+export const articleCompleteValidation = () =>
+  body('complete')
+    .isBoolean()
+    .withMessage('모집 마감 속성은 true or false가 가능합니다.');

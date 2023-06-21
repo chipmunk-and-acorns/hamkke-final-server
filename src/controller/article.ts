@@ -183,6 +183,39 @@ export const updateArticle = async (request: Request, response: Response) => {
   }
 };
 
+export const completeArticle = async (request: Request, response: Response) => {
+  const { id } = request.params;
+  const { complete } = request.body;
+  const { memberId } = response.locals;
+
+  try {
+    const findArticle = await findArticleById(parseInt(id), ['members']);
+
+    if (isEmpty(findArticle)) {
+      return response
+        .status(400)
+        .json({ message: '존재하지 않은 게시글 ID입니다.' });
+    }
+
+    if (findArticle.member.memberId !== parseInt(memberId)) {
+      return response
+        .status(401)
+        .json({ message: '게시글 수정 권한이 없습니다.' });
+    }
+
+    findArticle.comments = complete;
+    const completeUpdateArticle = await saveArticle(findArticle);
+
+    return response.status(200).json({ article: completeUpdateArticle });
+  } catch (error) {
+    console.error(error);
+    return response.status(500).json({
+      message: '에러가 발생했습니다. 잠시후 다시 시도해주세요.',
+      error,
+    });
+  }
+};
+
 // delete
 export const deleteArticle = async (request: Request, response: Response) => {
   const { id } = request.params;
