@@ -178,6 +178,17 @@ route.post('/', authCheck, articleValidation(), createArticle);
  *   get:
  *     summary: 게시글 리스트 가져오기
  *     tags: [Article]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: 현재 페이지
+ *       - in: query
+ *         name: size
+ *         schema:
+ *           type: integer
+ *         description: 가져올 게시글 갯수
  *     responses:
  *       200:
  *         description: 게시글 리스트 조회 성공
@@ -189,6 +200,18 @@ route.post('/', authCheck, articleValidation(), createArticle);
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Article'
+ *                 pageInfo:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                       description: 현재 페이지
+ *                     size:
+ *                       type: integer
+ *                       description: 페이지당 게시글 갯수
+ *                     totalPage:
+ *                       type: integer
+ *                       description: 총 페이지 수
  *       500:
  *         description: 서버 에러
  */

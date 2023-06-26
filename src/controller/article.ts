@@ -32,8 +32,6 @@ export const createArticle = async (request: Request, response: Response) => {
   } = request.body;
   const { memberId } = response.locals;
 
-  console.log(dueDate);
-
   try {
     const member = await findMemberById(memberId);
     const newArticle = new Article();
@@ -87,11 +85,26 @@ export const createArticle = async (request: Request, response: Response) => {
 };
 
 // read
-export const getArticles = async (_request: Request, response: Response) => {
-  try {
-    const articles = await findArticles(['comments']);
+export const getArticles = async (request: Request, response: Response) => {
+  const { page = 1, size = 10 } = request.query;
 
-    return response.status(200).json({ articles });
+  try {
+    const result = await findArticles(
+      { page: Number(page), size: Number(size) },
+      ['comments'],
+    );
+
+    const [articles, totalArticleCount] = result;
+    const isRemainContents = totalArticleCount % Number(size) > 0;
+    const totalPage =
+      Math.floor(totalArticleCount / Number(size)) + (isRemainContents ? 1 : 0);
+    const pageInfo = {
+      page,
+      totalPage,
+      size,
+    };
+
+    return response.status(200).json({ articles, pageInfo });
   } catch (error) {
     console.error(error);
     return response.status(500).json({
@@ -105,7 +118,7 @@ export const getArticles = async (_request: Request, response: Response) => {
 export const getArticle = async (request: Request, response: Response) => {
   try {
     const { id } = request.params;
-    const article = await findArticleById(parseInt(id));
+    const article = await findArticleById(parseInt(id), ['member', 'comments']);
 
     return response.status(200).json({ article });
   } catch (error) {
@@ -135,7 +148,7 @@ export const updateArticle = async (request: Request, response: Response) => {
     positions = [],
   } = request.body;
   try {
-    const findArticle = await findArticleById(parseInt(id), ['members']);
+    const findArticle = await findArticleById(parseInt(id), ['member']);
 
     if (isEmpty(findArticle)) {
       return response
@@ -189,7 +202,7 @@ export const completeArticle = async (request: Request, response: Response) => {
   const { memberId } = response.locals;
 
   try {
-    const findArticle = await findArticleById(parseInt(id), ['members']);
+    const findArticle = await findArticleById(parseInt(id), ['member']);
 
     if (isEmpty(findArticle)) {
       return response
@@ -203,7 +216,7 @@ export const completeArticle = async (request: Request, response: Response) => {
         .json({ message: '게시글 수정 권한이 없습니다.' });
     }
 
-    findArticle.comments = complete;
+    findArticle.complete = complete;
     const completeUpdateArticle = await saveArticle(findArticle);
 
     return response.status(200).json({ article: completeUpdateArticle });
