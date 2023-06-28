@@ -11,22 +11,22 @@ import Comment from './comment';
 
 @Entity('members')
 export default class Member {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('increment')
   memberId!: number;
 
-  @Column('varchar')
+  @Column({ type: 'varchar', length: 255, nullable: false })
   username!: string;
 
-  @Column('varchar')
+  @Column({ type: 'varchar', length: 255, nullable: false })
   password!: string;
 
-  @Column('varchar')
+  @Column({ type: 'varchar', length: 255, nullable: false })
   nickname!: string;
 
-  @Column('date')
+  @Column({ type: 'datetime', nullable: false })
   birth!: Date;
 
-  @Column('varchar')
+  @Column({ type: 'varchar', length: 500, nullable: true })
   profile!: string;
 
   @CreateDateColumn()

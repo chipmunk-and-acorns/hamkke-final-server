@@ -109,6 +109,17 @@ route.post('/', authCheck, newCommentValidation(), createComment);
  *   get:
  *     summary: 댓글 리스트 조회
  *     tags: [Comment]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: 현재 페이지
+ *       - in: query
+ *         name: size
+ *         schema:
+ *           type: integer
+ *         description: 가져올 댓글 갯수
  *     responses:
  *       200:
  *         description: 조회 성공
@@ -120,6 +131,21 @@ route.post('/', authCheck, newCommentValidation(), createComment);
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Comment'
+ *                 pageInfo:
+ *                   type: object
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                       description: 현재 페이지
+ *                     size:
+ *                       type: integer
+ *                       description: 페이지당 게시글 갯수
+ *                     totalPage:
+ *                       type: integer
+ *                       description: 총 페이지 수
+ *                     totalCount:
+ *                       type: integer
+ *                       description: 총 게시글 수
  *       500:
  *         description: 서버 에러
  */
@@ -171,7 +197,7 @@ route.get('/', getComments);
  *       500:
  *         description: 서버 에러
  */
-route.patch('/', authCheck, updateCommentValidation(), updateComment);
+route.patch('/:id', authCheck, updateCommentValidation(), updateComment);
 
 /**
  * @swagger
@@ -195,4 +221,6 @@ route.patch('/', authCheck, updateCommentValidation(), updateComment);
  *       500:
  *         description: 서버 에러
  */
-route.delete('/', authCheck, deleteComment);
+route.delete('/:id', authCheck, deleteComment);
+
+export default route;

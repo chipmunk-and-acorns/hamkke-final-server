@@ -9,9 +9,11 @@ export const validErrorHandler = (
   const result = validationResult(request);
 
   if (!result.isEmpty()) {
-    return response
-      .status(400)
-      .json({ errors: result.array().map((e) => ({ message: e.msg })) });
+    return response.status(400).json({
+      errors: result
+        .array()
+        .map((e) => ({ path: (e as { path: string }).path, message: e.msg })),
+    });
   }
 
   return next();

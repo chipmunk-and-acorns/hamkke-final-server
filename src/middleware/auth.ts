@@ -47,10 +47,10 @@ export const authCheck = async (
     return response.status(403).json({ message: '유효하지 않은 Token입니다.' });
   } catch (error) {
     if (typeGuard<{ name: string }>(error, 'name')) {
-      if (error.name === 'TOKEN_EXPIRED') {
-        return response.status(401).json({ error, errorCode: error.name });
+      if (error.name === 'TokenExpiredError') {
+        return response.status(403).json({ error });
       } else {
-        return response.status(401).json({ error, errorCode: error.name });
+        return response.status(401).json({ error });
       }
     }
   }

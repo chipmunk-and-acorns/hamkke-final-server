@@ -25,12 +25,15 @@ export const articleValidation = () => [
   body('period')
     .custom((value: any) => value === null || typeof value === 'number')
     .withMessage('진행기간은 null 또는 숫자만 입력가능합니다.'),
-  body('dueDate')
-    .isISO8601()
-    .withMessage('유효하지 않은 날짜형식입니다. (ISO8601)'),
+  body('dueDate').isISO8601().withMessage('유효하지 않은 날짜형식입니다.'),
   body('contact')
     .custom((value: any) => Object.values(ArticleContact).includes(value))
     .withMessage('잘못된 연락 방법입니다.'),
   body('link').trim().notEmpty().withMessage('연락 링크가 비어있습니다.'),
   validErrorHandler,
 ];
+
+export const articleCompleteValidation = () =>
+  body('complete')
+    .isBoolean()
+    .withMessage('모집 마감 속성은 true or false가 가능합니다.');

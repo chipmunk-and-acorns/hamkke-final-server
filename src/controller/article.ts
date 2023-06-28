@@ -14,6 +14,7 @@ import {
   removeArticle,
   saveArticle,
 } from '../repository/article';
+import { memberToMemberResponseDto } from '../mapper/member';
 
 // create
 export const createArticle = async (request: Request, response: Response) => {
@@ -85,11 +86,35 @@ export const createArticle = async (request: Request, response: Response) => {
 };
 
 // read
-export const getArticles = async (_request: Request, response: Response) => {
-  try {
-    const articles = await findArticles(['comments']);
+export const getArticles = async (request: Request, response: Response) => {
+  const {
+    page = 1,
+    size = 10,
+    stacks = [],
+    position,
+    complete,
+  } = request.query;
 
-    return response.status(200).json({ articles });
+  try {
+    const [articles, count] = await findArticles({
+      page: Number(page),
+      size: Number(size),
+      stacks: (stacks as string[]).map((s: string) => Number(s)),
+      position: Number(position),
+      complete: complete === 'true',
+    });
+
+    const totalPage = Math.ceil(count / Number(size));
+
+    return response.status(200).json({
+      articles,
+      pageInfo: {
+        currentPage: Number(page),
+        size: Number(size),
+        totalPage,
+        totalCount: count,
+      },
+    });
   } catch (error) {
     console.error(error);
     return response.status(500).json({
@@ -103,9 +128,19 @@ export const getArticles = async (_request: Request, response: Response) => {
 export const getArticle = async (request: Request, response: Response) => {
   try {
     const { id } = request.params;
-    const article = await findArticleById(parseInt(id));
+    const article = await findArticleById(parseInt(id), ['member', 'comments']);
 
-    return response.status(200).json({ article });
+    if (isEmpty(article)) {
+      return response
+        .status(400)
+        .json({ message: '잘못된 게시글 아이디입니다.' });
+    }
+
+    const memberResponseDto = memberToMemberResponseDto(article.member);
+
+    return response
+      .status(200)
+      .json({ article: { ...article, member: { ...memberResponseDto } } });
   } catch (error) {
     console.error(error);
     return response.status(500).json({
@@ -133,7 +168,7 @@ export const updateArticle = async (request: Request, response: Response) => {
     positions = [],
   } = request.body;
   try {
-    const findArticle = await findArticleById(parseInt(id), ['members']);
+    const findArticle = await findArticleById(parseInt(id), ['member']);
 
     if (isEmpty(findArticle)) {
       return response
@@ -181,12 +216,45 @@ export const updateArticle = async (request: Request, response: Response) => {
   }
 };
 
+export const completeArticle = async (request: Request, response: Response) => {
+  const { id } = request.params;
+  const { complete } = request.body;
+  const { memberId } = response.locals;
+
+  try {
+    const findArticle = await findArticleById(parseInt(id), ['member']);
+
+    if (isEmpty(findArticle)) {
+      return response
+        .status(400)
+        .json({ message: '존재하지 않은 게시글 ID입니다.' });
+    }
+
+    if (findArticle.member.memberId !== parseInt(memberId)) {
+      return response
+        .status(401)
+        .json({ message: '게시글 수정 권한이 없습니다.' });
+    }
+
+    findArticle.complete = complete;
+    const completeUpdateArticle = await saveArticle(findArticle);
+
+    return response.status(200).json({ article: completeUpdateArticle });
+  } catch (error) {
+    console.error(error);
+    return response.status(500).json({
+      message: '에러가 발생했습니다. 잠시후 다시 시도해주세요.',
+      error,
+    });
+  }
+};
+
 // delete
 export const deleteArticle = async (request: Request, response: Response) => {
   const { id } = request.params;
   const { memberId } = response.locals;
   try {
-    const findArticle = await findArticleById(parseInt(id), ['members']);
+    const findArticle = await findArticleById(parseInt(id), ['member']);
 
     if (isEmpty(findArticle)) {
       return response.status(400).json({ message: '존재하지 않는 ID입니다.' });

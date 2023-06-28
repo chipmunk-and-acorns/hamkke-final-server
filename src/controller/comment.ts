@@ -9,6 +9,7 @@ import {
 } from '../repository/comment';
 import Comment from '../entity/comment';
 import { isEmpty } from 'lodash';
+import { memberToMemberResponseDto } from '../mapper/member';
 
 export const createComment = async (request: Request, response: Response) => {
   const { memberId } = response.locals;
@@ -24,8 +25,11 @@ export const createComment = async (request: Request, response: Response) => {
       newComment.member = member;
       newComment.content = content;
       const savedComment = await saveComment(newComment);
+      const memberResponseDto = memberToMemberResponseDto(savedComment.member);
 
-      return response.status(201).json({ comment: savedComment });
+      return response.status(201).json({
+        comment: { ...savedComment, member: { ...memberResponseDto } },
+      });
     }
 
     return response
@@ -40,11 +44,28 @@ export const createComment = async (request: Request, response: Response) => {
   }
 };
 
-export const getComments = async (_request: Request, response: Response) => {
-  try {
-    const comments = await findComments();
+export const getComments = async (request: Request, response: Response) => {
+  const { page = 1, size = 10 } = request.query;
 
-    return response.status(200).json({ comments });
+  try {
+    const relations = ['member'];
+    const [comments, count] = await findComments(
+      { page: Number(page), size: Number(size) },
+      relations,
+    );
+    const mappedComments = comments.map((comment: Comment) => {
+      const memberResponseDto = memberToMemberResponseDto(comment.member);
+      return { ...comment, member: memberResponseDto };
+    });
+    const totalPage = Math.ceil(count / Number(size));
+    const pageInfo = {
+      currentPage: Number(page),
+      size: Number(size),
+      totalPage,
+      totalCount: count,
+    };
+
+    return response.status(200).json({ comments: mappedComments, pageInfo });
   } catch (error) {
     console.error(error);
     return response.status(500).json({
@@ -59,7 +80,7 @@ export const updateComment = async (request: Request, response: Response) => {
   const { content } = request.body;
 
   try {
-    const comment = await findCommentById(parseInt(id), ['members']);
+    const comment = await findCommentById(parseInt(id), ['member']);
 
     if (isEmpty(comment)) {
       return response
