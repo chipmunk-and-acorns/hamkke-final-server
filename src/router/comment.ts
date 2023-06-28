@@ -134,15 +134,18 @@ route.post('/', authCheck, newCommentValidation(), createComment);
  *                 pageInfo:
  *                   type: object
  *                   properties:
- *                     page:
+ *                     currentPage:
  *                       type: integer
  *                       description: 현재 페이지
  *                     size:
  *                       type: integer
- *                       description: 페이지당 댓글 갯수
+ *                       description: 페이지당 게시글 갯수
  *                     totalPage:
  *                       type: integer
  *                       description: 총 페이지 수
+ *                     totalCount:
+ *                       type: integer
+ *                       description: 총 게시글 수
  *       500:
  *         description: 서버 에러
  */

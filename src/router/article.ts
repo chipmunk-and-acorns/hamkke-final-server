@@ -189,6 +189,21 @@ route.post('/', authCheck, articleValidation(), createArticle);
  *         schema:
  *           type: integer
  *         description: 가져올 게시글 갯수
+ *       - in: query
+ *         name: stacks
+ *         schema:
+ *           type: array
+ *         description: 기술 스택 필터 (stackId[] | undefined)
+ *       - in: query
+ *         name: position
+ *         schema:
+ *           type: integer
+ *         description: 포지션 필터 (positionId | undefined)
+ *       - in: query
+ *         name: complete
+ *         schema:
+ *           type: boolean
+ *         description: 모집 완료 필터 (true | undefined)
  *     responses:
  *       200:
  *         description: 게시글 리스트 조회 성공
@@ -203,7 +218,7 @@ route.post('/', authCheck, articleValidation(), createArticle);
  *                 pageInfo:
  *                   type: object
  *                   properties:
- *                     page:
+ *                     currentPage:
  *                       type: integer
  *                       description: 현재 페이지
  *                     size:
@@ -212,6 +227,9 @@ route.post('/', authCheck, articleValidation(), createArticle);
  *                     totalPage:
  *                       type: integer
  *                       description: 총 페이지 수
+ *                     totalCount:
+ *                       type: integer
+ *                       description: 총 게시글 수
  *       500:
  *         description: 서버 에러
  */
