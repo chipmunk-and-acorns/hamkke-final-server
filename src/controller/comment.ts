@@ -49,7 +49,7 @@ export const getComments = async (request: Request, response: Response) => {
 
   try {
     const relations = ['member'];
-    const [comments, totalCommentCounts] = await findComments(
+    const [comments, count] = await findComments(
       { page: Number(page), size: Number(size) },
       relations,
     );
@@ -57,14 +57,12 @@ export const getComments = async (request: Request, response: Response) => {
       const memberResponseDto = memberToMemberResponseDto(comment.member);
       return { ...comment, member: memberResponseDto };
     });
-    const isRemainContents = totalCommentCounts % Number(size) > 0;
-    const totalPage = isRemainContents
-      ? totalCommentCounts / Number(size) + 1
-      : totalCommentCounts / Number(size);
+    const totalPage = Math.ceil(count / Number(size));
     const pageInfo = {
-      page,
-      size,
+      currentPage: Number(page),
+      size: Number(size),
       totalPage,
+      totalCount: count,
     };
 
     return response.status(200).json({ comments: mappedComments, pageInfo });

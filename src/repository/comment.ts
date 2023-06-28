@@ -11,7 +11,7 @@ export const saveComment = async (comment: Comment) => {
 export const findComments = async (pageInfo: PageInfo, relations: string[]) => {
   const { page, size } = pageInfo;
   return await repository.findAndCount({
-    take: page,
+    take: size,
     skip: (page - 1) * size,
     relations,
   });
