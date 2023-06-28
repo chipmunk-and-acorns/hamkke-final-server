@@ -14,6 +14,7 @@ import {
   removeArticle,
   saveArticle,
 } from '../repository/article';
+import { memberToMemberResponseDto } from '../mapper/member';
 
 // create
 export const createArticle = async (request: Request, response: Response) => {
@@ -120,7 +121,17 @@ export const getArticle = async (request: Request, response: Response) => {
     const { id } = request.params;
     const article = await findArticleById(parseInt(id), ['member', 'comments']);
 
-    return response.status(200).json({ article });
+    if (isEmpty(article)) {
+      return response
+        .status(400)
+        .json({ message: '잘못된 게시글 아이디입니다.' });
+    }
+
+    const memberResponseDto = memberToMemberResponseDto(article.member);
+
+    return response
+      .status(200)
+      .json({ article: { ...article, member: { ...memberResponseDto } } });
   } catch (error) {
     console.error(error);
     return response.status(500).json({

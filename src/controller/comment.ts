@@ -9,7 +9,7 @@ import {
 } from '../repository/comment';
 import Comment from '../entity/comment';
 import { isEmpty } from 'lodash';
-import { memberToMemberReponseDto } from '../mapper/member';
+import { memberToMemberResponseDto } from '../mapper/member';
 
 export const createComment = async (request: Request, response: Response) => {
   const { memberId } = response.locals;
@@ -25,7 +25,7 @@ export const createComment = async (request: Request, response: Response) => {
       newComment.member = member;
       newComment.content = content;
       const savedComment = await saveComment(newComment);
-      const memberResponseDto = memberToMemberReponseDto(savedComment.member);
+      const memberResponseDto = memberToMemberResponseDto(savedComment.member);
 
       return response.status(201).json({
         comment: { ...savedComment, member: { ...memberResponseDto } },
@@ -44,15 +44,30 @@ export const createComment = async (request: Request, response: Response) => {
   }
 };
 
-export const getComments = async (_request: Request, response: Response) => {
+export const getComments = async (request: Request, response: Response) => {
+  const { page = 1, size = 10 } = request.query;
+
   try {
-    const comments = await findComments();
+    const relations = ['member'];
+    const [comments, totalCommentCounts] = await findComments(
+      { page: Number(page), size: Number(size) },
+      relations,
+    );
     const mappedComments = comments.map((comment: Comment) => {
-      const memberResponseDto = memberToMemberReponseDto(comment.member);
+      const memberResponseDto = memberToMemberResponseDto(comment.member);
       return { ...comment, member: memberResponseDto };
     });
+    const isRemainContents = totalCommentCounts % Number(size) > 0;
+    const totalPage = isRemainContents
+      ? totalCommentCounts / Number(size) + 1
+      : totalCommentCounts / Number(size);
+    const pageInfo = {
+      page,
+      size,
+      totalPage,
+    };
 
-    return response.status(200).json({ comments: mappedComments });
+    return response.status(200).json({ comments: mappedComments, pageInfo });
   } catch (error) {
     console.error(error);
     return response.status(500).json({
