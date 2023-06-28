@@ -87,25 +87,34 @@ export const createArticle = async (request: Request, response: Response) => {
 
 // read
 export const getArticles = async (request: Request, response: Response) => {
-  const { page = 1, size = 10 } = request.query;
+  const {
+    page = 1,
+    size = 10,
+    stacks = [],
+    position,
+    complete,
+  } = request.query;
 
   try {
-    const result = await findArticles(
-      { page: Number(page), size: Number(size) },
-      ['comments'],
-    );
+    const [articles, count] = await findArticles({
+      page: Number(page),
+      size: Number(size),
+      stacks: (stacks as string[]).map((s: string) => Number(s)),
+      position: Number(position),
+      complete: complete === 'true',
+    });
 
-    const [articles, totalArticleCount] = result;
-    const isRemainContents = totalArticleCount % Number(size) > 0;
-    const totalPage =
-      Math.floor(totalArticleCount / Number(size)) + (isRemainContents ? 1 : 0);
-    const pageInfo = {
-      page,
-      totalPage,
-      size,
-    };
+    const totalPage = Math.ceil(count / Number(size));
 
-    return response.status(200).json({ articles, pageInfo });
+    return response.status(200).json({
+      articles,
+      pageInfo: {
+        currentPage: Number(page),
+        size: Number(size),
+        totalPage,
+        totalCount: count,
+      },
+    });
   } catch (error) {
     console.error(error);
     return response.status(500).json({
