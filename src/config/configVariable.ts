@@ -11,7 +11,7 @@ const required = (key: string, defaultValue?: any): string => {
   const value = process.env[key] || defaultValue;
 
   if (value == undefined) {
-    throw new Error(`Invalid config variable to "${key}"`);
+    throw new Error(`해당 변수를 읽을 수 없습니다 -> "${key}"`);
   }
 
   return value;
@@ -44,6 +44,14 @@ export default {
       refreshKey: required('JWT_REFRESH_KEY'),
       accessExpiresIn: required('JWT_ACCESS_EXPIRES_IN'),
       refreshExpiresIn: required('JWT_REFRESH_EXPIRES_IN'),
+    },
+  },
+  aws: {
+    s3: {
+      accessKey: required('AWS_ACCESS_KEY'),
+      secretKey: required('AWS_SECRET_KEY'),
+      bucket: required('AWS_S3_BUCKET'),
+      region: required('AWS_REGION'),
     },
   },
 };
