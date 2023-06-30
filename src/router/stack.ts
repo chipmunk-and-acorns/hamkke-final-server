@@ -1,7 +1,7 @@
 import * as express from 'express';
 import {
   createStack,
-  // deleteStack,
+  deleteStack,
   // getStack,
   // getStackList,
   // updateStack,
@@ -17,6 +17,6 @@ route.post('/', authCheck, upload.single('image'), createStack);
 // route.get('/:id', getStack);
 // route.patch('/:id', updateStack);
 // route.patch('/image/:id', upload.single('image'), updateStackImage);
-// route.delete('/:id', deleteStack);
+route.delete('/:id', deleteStack);
 
 export default route;

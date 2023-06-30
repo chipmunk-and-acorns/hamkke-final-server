@@ -11,7 +11,7 @@ const storage = multerS3({
   contentType: multerS3.AUTO_CONTENT_TYPE,
   contentDisposition: 'inline',
   key: (_req, file, cb) =>
-    cb(null, `raw/${v4()}.${mime.extension(file.mimetype)}`),
+    cb(null, `stack/${v4()}.${mime.extension(file.mimetype)}`),
 });
 
 export const upload = multer({
