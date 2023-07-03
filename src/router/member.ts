@@ -7,6 +7,7 @@ import {
   deleteAccount,
   updatePassword,
   updateNickname,
+  updateProfile,
 } from '../controller/member';
 import { authCheck } from '../middleware/auth';
 import {
@@ -232,6 +233,10 @@ route.patch(
   updatePasswordValidation(),
   updatePassword,
 );
+
+// TODO: document
+route.patch('/:id/profile', updateProfile);
+
 /**
  * @swagger
  * tags:
