@@ -6,6 +6,7 @@ import * as MemberRepository from '../repository/member';
 import Member from '../entity/member';
 import config from '../config/configVariable';
 import redisClient from '../db/redis';
+import { memberToMemberResponseDto } from '../mapper/member';
 
 const generateAccessRefreshToken = (payload: { memberId: number }) => {
   const { secretKey, accessExpiresIn, refreshKey, refreshExpiresIn } =
@@ -194,6 +195,31 @@ export const updateNickname = async (request: Request, response: Response) => {
     await MemberRepository.saveMember(findMember);
 
     return response.status(200).json({ nickname });
+  } catch (error) {
+    console.error(error);
+    return response.status(500).json({ error });
+  }
+};
+
+export const updateProfile = async (request: Request, response: Response) => {
+  const { id } = request.params;
+  const { profile } = request.body;
+
+  try {
+    const member = await MemberRepository.findMemberById(Number(id));
+
+    if (isEmpty(member)) {
+      return response
+        .status(400)
+        .json({ message: '존재하지 않은 사용자입니다.' });
+    }
+
+    member.profile = profile;
+
+    const updateProfile = await MemberRepository.saveMember(member);
+    const responseMemberDto = await memberToMemberResponseDto(updateProfile);
+
+    return response.status(200).json({ member: responseMemberDto });
   } catch (error) {
     console.error(error);
     return response.status(500).json({ error });
