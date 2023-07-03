@@ -200,6 +200,28 @@ export const updateNickname = async (request: Request, response: Response) => {
   }
 };
 
+export const updateProfile = async (request: Request, response: Response) => {
+  const { id } = request.params;
+  const { profile } = request.body;
+
+  try {
+    const member = await MemberRepository.findMemberById(Number(id));
+
+    if (isEmpty(member)) {
+      return response
+        .status(400)
+        .json({ message: '존재하지 않은 사용자입니다.' });
+    }
+
+    member.profile = profile;
+
+    return response.status(200).json({ profile: profile });
+  } catch (error) {
+    console.error(error);
+    return response.status(500).json({ error });
+  }
+};
+
 /**
  * 회원탈퇴
  */
