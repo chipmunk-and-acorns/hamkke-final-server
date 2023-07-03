@@ -6,6 +6,7 @@ import * as MemberRepository from '../repository/member';
 import Member from '../entity/member';
 import config from '../config/configVariable';
 import redisClient from '../db/redis';
+import { memberToMemberResponseDto } from '../mapper/member';
 
 const generateAccessRefreshToken = (payload: { memberId: number }) => {
   const { secretKey, accessExpiresIn, refreshKey, refreshExpiresIn } =
@@ -215,7 +216,10 @@ export const updateProfile = async (request: Request, response: Response) => {
 
     member.profile = profile;
 
-    return response.status(200).json({ profile: profile });
+    const updateProfile = await MemberRepository.saveMember(member);
+    const responseMemberDto = await memberToMemberResponseDto(updateProfile);
+
+    return response.status(200).json({ member: responseMemberDto });
   } catch (error) {
     console.error(error);
     return response.status(500).json({ error });
