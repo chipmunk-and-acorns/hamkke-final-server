@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import Article from './article';
 import Stack from './stack';
 
@@ -20,6 +14,5 @@ export default class Position {
   articles!: Article[];
 
   @ManyToMany(() => Stack, (stack) => stack.positions, { eager: true })
-  @JoinTable()
   stacks!: Stack[];
 }
