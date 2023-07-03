@@ -1,23 +1,13 @@
 import { Request, Response } from 'express';
-import {
-  DeleteObjectCommand,
-  DeleteObjectCommandInput,
-} from '@aws-sdk/client-s3';
 import { isEmpty } from 'lodash';
 import Stack from '../entity/stack';
 import Position from '../entity/position';
 import { findPositionById } from '../repository/position';
 import { findStackById, removeStack, saveStack } from '../repository/stack';
-import envConfig from '../config/configVariable';
-import { s3 } from '../config/aws';
-
-interface S3File extends Express.Multer.File {
-  key: string;
-}
+import { deleteS3Image } from '../config/aws';
 
 export const createStack = async (request: Request, response: Response) => {
-  const { key } = request.file as S3File;
-  const { name, positions = [] } = request.body;
+  const { name, profile, positions = [] } = request.body;
 
   try {
     const positionData: Position[] = await Promise.all(
@@ -28,7 +18,7 @@ export const createStack = async (request: Request, response: Response) => {
 
     const stack = new Stack();
     stack.name = name;
-    stack.profile = key;
+    stack.profile = profile;
     stack.positions = positionData;
 
     const createdStack = await saveStack(stack);
@@ -39,18 +29,6 @@ export const createStack = async (request: Request, response: Response) => {
     return response.status(500).json({ error });
   }
 };
-/* 
-export const getStackList = async (request: Request, response: Response) => {};
-
-export const getStack = async (request: Request, response: Response) => {};
-
-export const updateStack = async (request: Request, response: Response) => {};
-
-export const updateStackImage = async (
-  request: Request,
-  response: Response,
-) => {};
-*/
 
 export const deleteStack = async (request: Request, response: Response) => {
   const { id } = request.params;
@@ -64,16 +42,8 @@ export const deleteStack = async (request: Request, response: Response) => {
         .json({ message: `잘못된 스택 아이디입니다. ${id}` });
     }
 
-    const file = findStack.profile;
-
-    if (file) {
-      const params: DeleteObjectCommandInput = {
-        Bucket: envConfig.aws.s3.bucket,
-        Key: file,
-      };
-
-      const command = new DeleteObjectCommand(params);
-      await s3.send(command);
+    if (findStack.profile) {
+      deleteS3Image(findStack.profile);
     }
 
     await removeStack(findStack);
