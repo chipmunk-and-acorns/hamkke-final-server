@@ -3,7 +3,12 @@ import { isEmpty } from 'lodash';
 import Stack from '../entity/stack';
 import Position from '../entity/position';
 import { findPositionById } from '../repository/position';
-import { findStackById, removeStack, saveStack } from '../repository/stack';
+import {
+  findStackById,
+  findStacks,
+  removeStack,
+  saveStack,
+} from '../repository/stack';
 import { deleteS3Image } from '../config/aws';
 
 export const createStack = async (request: Request, response: Response) => {
@@ -34,6 +39,55 @@ export const createStack = async (request: Request, response: Response) => {
     const createdStack = await saveStack(stack);
 
     return response.status(201).json({ stack: createdStack });
+  } catch (error) {
+    console.error(error);
+    return response.status(500).json({ error });
+  }
+};
+
+export const getStackList = async (_request: Request, response: Response) => {
+  try {
+    const stacks = await findStacks();
+
+    return response.status(200).json({ stacks });
+  } catch (error) {
+    console.error(error);
+    return response.status(500).json({ error });
+  }
+};
+
+export const getStack = async (request: Request, response: Response) => {
+  const { id } = request.params;
+
+  try {
+    const stack = await findStackById(Number(id));
+
+    return response.status(200).json({ stack });
+  } catch (error) {
+    console.error(error);
+    return response.status(500).json({ error });
+  }
+};
+
+export const updateStack = async (request: Request, response: Response) => {
+  const { id } = request.params;
+  const { profile, name } = request.body;
+
+  try {
+    const stack = await findStackById(Number(id));
+
+    if (isEmpty(stack)) {
+      return response
+        .status(400)
+        .json({ message: '존재하지 않은 기술(Stack)입니다.' });
+    }
+
+    stack.profile = profile ?? stack.profile;
+    stack.name = name ?? stack.name;
+
+    const updatedStack = await saveStack(stack);
+
+    return response.status(200).json({ stack: updatedStack });
   } catch (error) {
     console.error(error);
     return response.status(500).json({ error });
