@@ -12,6 +12,7 @@ route.use('/members', memberRouter);
 route.use('/articles', articleRouter);
 route.use('/comments', commentRouter);
 route.use('/stacks', stackRouter);
+// TODO: Client 배포시 배포 url s3 cors의 origin에 추가
 route.use('/images', imageRouter);
 
 export default route;
