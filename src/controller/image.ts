@@ -11,7 +11,7 @@ export const preSignImage = async (request: Request, response: Response) => {
     const key = `image/${imageKey}`;
     const presigned = await getSignedUrl(key);
 
-    return response.status(200).json({ key, presigned });
+    return response.status(200).json({ imageKey, presigned });
   } catch (error) {
     console.error(error);
     return response.status(500).json({
