@@ -61,7 +61,7 @@ export const registerAccount = async (request: Request, response: Response) => {
     return response.status(201).json({
       memberId: createMember.memberId,
       nickname: createMember.nickname,
-      accessToken,
+      accessToken: `Bearer ${accessToken}`,
       refreshToken,
     });
   } catch (error) {
@@ -109,9 +109,12 @@ export const login = async (request: Request, response: Response) => {
       await redisClient.del(`dead:${memberId}`);
     }
 
-    return response
-      .status(200)
-      .json({ memberId, nickname, accessToken, refreshToken });
+    return response.status(200).json({
+      memberId,
+      nickname,
+      accessToken: `Bearer ${accessToken}`,
+      refreshToken,
+    });
   } catch (error) {
     console.error(error);
     return response.status(500).json({ error });
