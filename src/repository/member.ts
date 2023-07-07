@@ -12,8 +12,11 @@ export const findMemberByUsername = async (username: string) => {
   return await repository.findOneBy({ username });
 };
 
-export const findMemberById = async (memberId: number) => {
-  return await repository.findOneBy({ memberId });
+export const findMemberById = async (
+  memberId: number,
+  relations: string[] = [],
+) => {
+  return await repository.findOne({ where: { memberId }, relations });
 };
 
 export const deleteMemberById = async (memberId: number) => {

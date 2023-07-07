@@ -8,6 +8,7 @@ import {
   updatePassword,
   updateNickname,
   updateProfile,
+  getArticlesOrCommentsByMember,
 } from '../controller/member';
 import { authCheck } from '../middleware/auth';
 import {
@@ -310,5 +311,7 @@ route.patch(
  *         description: 존재하지 않은 사용자
  */
 route.delete('/:id', authCheck, deleteAccount);
+
+route.get('/:id/:type', authCheck, getArticlesOrCommentsByMember);
 
 export default route;

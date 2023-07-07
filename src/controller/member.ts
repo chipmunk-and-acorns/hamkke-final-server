@@ -8,6 +8,8 @@ import config from '../config/configVariable';
 import redisClient from '../db/redis';
 import { memberToMemberResponseDto } from '../mapper/member';
 
+type DataType = 'articles' | 'comments';
+
 const generateAccessRefreshToken = (payload: { memberId: number }) => {
   const { secretKey, accessExpiresIn, refreshKey, refreshExpiresIn } =
     config.auth.jwt;
@@ -246,5 +248,33 @@ export const deleteAccount = async (_request: Request, response: Response) => {
   } catch (error) {
     console.error(error);
     return response.status(500).json({ error });
+  }
+};
+
+export const getArticlesOrCommentsByMember = async (
+  request: Request,
+  response: Response,
+) => {
+  const { id, type } = request.params;
+  if (['comments', 'articles'].includes(type)) {
+    try {
+      const findMember = await MemberRepository.findMemberById(Number(id), [
+        type,
+      ]);
+
+      if (isEmpty(findMember)) {
+        return response
+          .status(400)
+          .json({ message: '존재하지 않은 사용자 아이디입니다.' });
+      }
+      const data = findMember[type as DataType];
+
+      return response.status(200).json({ [type]: data });
+    } catch (error) {
+      console.error(error);
+      return response.status(500).json({ error });
+    }
+  } else {
+    return response.status(404).json({ message: 'Not Found' });
   }
 };

@@ -261,7 +261,6 @@ route.get('/', getArticles);
  *         description: 서버 에러
  */
 route.get('/:id', getArticle);
-// route.get('/member/:id', getArticlesByMemberId);
 /**
  * @swagger
  * tags:

@@ -47,8 +47,6 @@ export const findArticleById = async (
   return await repository.findOne({ where: { articleId }, relations });
 };
 
-// export const findArticleByMemberId = async () => {};
-
 export const removeArticle = async (article: Article) => {
   return await repository.remove(article);
 };
