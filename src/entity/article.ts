@@ -56,6 +56,9 @@ export default class Article {
   @Column({ type: 'boolean', name: 'complete' })
   complete!: boolean;
 
+  @Column({ type: 'int', nullable: false, default: 0 })
+  viewCount!: number;
+
   // Relation
   @ManyToOne(() => Member, (member) => member.articles)
   @JoinColumn({ name: 'memberId' })

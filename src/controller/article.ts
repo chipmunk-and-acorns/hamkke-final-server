@@ -15,6 +15,8 @@ import {
   saveArticle,
 } from '../repository/article';
 import { memberToMemberResponseDto } from '../mapper/member';
+import { getClientIp } from '../util/ip';
+import redisClient from '../db/redis';
 
 // create
 export const createArticle = async (request: Request, response: Response) => {
@@ -126,14 +128,26 @@ export const getArticles = async (request: Request, response: Response) => {
 
 // readOne
 export const getArticle = async (request: Request, response: Response) => {
+  const { id } = request.params;
+  const ip = getClientIp(request);
+
   try {
-    const { id } = request.params;
     const article = await findArticleById(parseInt(id), ['member', 'comments']);
+
+    // ip redis 조회
 
     if (isEmpty(article)) {
       return response
         .status(400)
         .json({ message: '잘못된 게시글 아이디입니다.' });
+    }
+
+    const data = await redisClient.get(`article${article.articleId}:ip${ip}`);
+
+    if (data == null) {
+      await redisClient.set(`article${article.articleId}:ip${ip}`, 1);
+      article.viewCount++;
+      await saveArticle(article);
     }
 
     const memberResponseDto = memberToMemberResponseDto(article.member);
