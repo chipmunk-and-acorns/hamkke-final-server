@@ -129,12 +129,10 @@ export const getArticles = async (request: Request, response: Response) => {
 // readOne
 export const getArticle = async (request: Request, response: Response) => {
   const { id } = request.params;
-  const ip = getClientIp(request);
 
   try {
+    const ip = getClientIp(request);
     const article = await findArticleById(parseInt(id), ['member', 'comments']);
-
-    // ip redis 조회
 
     if (isEmpty(article)) {
       return response
@@ -142,10 +140,13 @@ export const getArticle = async (request: Request, response: Response) => {
         .json({ message: '잘못된 게시글 아이디입니다.' });
     }
 
-    const data = await redisClient.get(`article${article.articleId}:ip${ip}`);
+    // ip redis 조회
+    const viewCountKeyInRedis = `article${article.articleId}:ip${ip}`;
+    const data = await redisClient.get(viewCountKeyInRedis);
 
     if (data == null) {
-      await redisClient.set(`article${article.articleId}:ip${ip}`, 1);
+      await redisClient.set(viewCountKeyInRedis, 1);
+      await redisClient.expire(viewCountKeyInRedis, 86400);
       article.viewCount++;
       await saveArticle(article);
     }
