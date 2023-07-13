@@ -54,4 +54,14 @@ export default {
       region: required('AWS_REGION'),
     },
   },
+  oAuth: {
+    google: {
+      clientId: required('GOOGLE_CLIENT_KEY'),
+      clientSecret: required('GOOGLE_CLIENT_PASSWORD'),
+      authURL: required('GOOGLE_AUTH_URL'),
+      tokenURL: required('GOOGLE_TOKEN_URL'),
+      redirectURL: required('GOOGLE_REDIRECT_URL'),
+      userInfoURL: required('GOOGLE_USERINFO_URL'),
+    },
+  },
 };

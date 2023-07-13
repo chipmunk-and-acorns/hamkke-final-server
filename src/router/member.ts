@@ -4,6 +4,8 @@ import {
   registerAccount,
   login,
   logout,
+  oAuthGoogle,
+  oAuthSuccess,
   deleteAccount,
   updatePassword,
   updateNickname,
@@ -123,6 +125,7 @@ const route = express.Router();
  *         description: 이메일 중복
  */
 route.post('/register', registerValidation(), registerAccount);
+
 /**
  * @swagger
  * tags:
@@ -169,6 +172,9 @@ route.post('/register', registerValidation(), registerAccount);
  *         description: 아이디 혹은 비밀번호가 불일치
  */
 route.post('/login', login);
+route.get('/login/google', oAuthGoogle);
+route.get('/login/success', oAuthSuccess);
+
 /**
  * @swagger
  * tags:
@@ -190,6 +196,7 @@ route.post('/login', login);
  *         description: 로그아웃 성공
  */
 route.post('/logout', authCheck, logout);
+
 /**
  * @swagger
  * tags:
@@ -288,6 +295,7 @@ route.patch(
   updateNicknameValidation(),
   updateNickname,
 );
+
 /**
  * @swagger
  * tags:
@@ -312,6 +320,7 @@ route.patch(
  */
 route.delete('/:id', authCheck, deleteAccount);
 
+// TODO: document
 route.get('/:id/:type', authCheck, getArticlesOrCommentsByMember);
 
 export default route;

@@ -12,7 +12,9 @@ interface findOptions {
 const repository = dataSource.Article;
 
 export const saveArticle = async (newArticle: Article) => {
-  return await repository.save(newArticle);
+  return await repository.manager.transaction(async (entityManager) => {
+    return await entityManager.save(newArticle);
+  });
 };
 
 export const findArticles = async (option: findOptions) => {

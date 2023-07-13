@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
+import axios from 'axios';
 import { isEmpty } from 'lodash';
-import { MemberPostDto } from '../types/member';
-import { generateToken, hashPassword, matchPassword } from '../util/auth';
-import * as MemberRepository from '../repository/member';
+
 import Member from '../entity/member';
 import config from '../config/configVariable';
 import redisClient from '../db/redis';
+import * as MemberRepository from '../repository/member';
+import { MemberPostDto } from '../types/member';
 import { memberToMemberResponseDto } from '../mapper/member';
+import { generateToken, hashPassword, matchPassword } from '../util/auth';
 
 type DataType = 'articles' | 'comments';
 
@@ -19,9 +21,19 @@ const generateAccessRefreshToken = (payload: { memberId: number }) => {
   return { accessToken, refreshToken };
 };
 
-/**
- * 회원가입
- */
+const getGoogleAuthURL = () => {
+  let url = config.oAuth.google.authURL;
+  url += `?client_id=${config.oAuth.google.clientId}`;
+  url += `&redirect_uri=${config.oAuth.google.redirectURL}`;
+  url += `&access_type=offline`;
+  url += `&response_type=code`;
+  url += `&prompt=consent`;
+  url += `&scope=email profile openid`;
+
+  return url;
+};
+
+// 회원가입
 export const registerAccount = async (request: Request, response: Response) => {
   const { username, password, nickname, birth } = request.body;
 
@@ -70,9 +82,7 @@ export const registerAccount = async (request: Request, response: Response) => {
   }
 };
 
-/**
- * 로그인
- */
+// 로그인
 export const login = async (request: Request, response: Response) => {
   try {
     const { username, password } = request.body;
@@ -97,17 +107,13 @@ export const login = async (request: Request, response: Response) => {
     const payload = { memberId };
     const { accessToken, refreshToken } = generateAccessRefreshToken(payload);
 
-    await redisClient.set(memberId.toString(), refreshToken);
-
-    /**
-     * Info: 로그아웃 후 accessToken이 유효한 시점(redis의 deadzone에 정보가 있을경우)
-     * 해당 정보를 deadzone에서 삭제 함 (인증을 통과하기 위해)
-     */
     const findDeadZoneInfo = await redisClient.get(`dead:${memberId}`);
 
     if (findDeadZoneInfo != null) {
       await redisClient.del(`dead:${memberId}`);
     }
+
+    await redisClient.set(memberId.toString(), refreshToken);
 
     return response.status(200).json({
       memberId,
@@ -121,9 +127,76 @@ export const login = async (request: Request, response: Response) => {
   }
 };
 
-/**
- * 로그아웃
- */
+// Google 로그인 Redirect
+export const oAuthGoogle = async (_request: Request, response: Response) => {
+  const url = getGoogleAuthURL();
+  return response.redirect(url);
+};
+
+// OAuth 로그인 성공
+export const oAuthSuccess = async (request: Request, response: Response) => {
+  // const { authorization } = request.headers;
+  const { code } = request.query;
+  try {
+    const {
+      data: { access_token },
+    } = await axios.post(
+      config.oAuth.google.tokenURL,
+      {
+        code,
+        client_id: config.oAuth.google.clientId,
+        client_secret: config.oAuth.google.clientSecret,
+        redirect_uri: config.oAuth.google.redirectURL,
+        grant_type: 'authorization_code',
+      },
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
+    );
+
+    const { data: userData } = await axios.get(
+      config.oAuth.google.userInfoURL,
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      },
+    );
+
+    const { email, name, picture } = userData;
+    const findMember = await MemberRepository.findMemberByUsername(email);
+
+    if (isEmpty(findMember)) {
+      return response.status(200).json({ email, name, profile: picture });
+    }
+
+    const { memberId, nickname } = findMember;
+    const payload = { memberId };
+    const { accessToken, refreshToken } = generateAccessRefreshToken(payload);
+
+    const findDeadZoneInfo = await redisClient.get(`dead:${memberId}`);
+
+    if (findDeadZoneInfo != null) {
+      await redisClient.del(`dead:${memberId}`);
+    }
+
+    await redisClient.set(memberId.toString(), refreshToken);
+
+    return response.status(200).json({
+      memberId,
+      nickname,
+      accessToken: `Bearer ${accessToken}`,
+      refreshToken,
+    });
+  } catch (error) {
+    console.error(error);
+    return response.status(500).json({ message: 'OAuth Error', error });
+  }
+};
+
+// 로그아웃
 export const logout = async (_request: Request, response: Response) => {
   try {
     const { memberId } = response.locals;
@@ -139,9 +212,7 @@ export const logout = async (_request: Request, response: Response) => {
   }
 };
 
-/**
- * 비밀번호 변경
- */
+// 비밀번호 변경
 export const updatePassword = async (request: Request, response: Response) => {
   try {
     const { memberId } = response.locals;
@@ -176,9 +247,7 @@ export const updatePassword = async (request: Request, response: Response) => {
   }
 };
 
-/**
- * 닉네임 변경
- */
+// 닉네임 변경
 export const updateNickname = async (request: Request, response: Response) => {
   try {
     const { memberId } = response.locals;
@@ -231,9 +300,7 @@ export const updateProfile = async (request: Request, response: Response) => {
   }
 };
 
-/**
- * 회원탈퇴
- */
+// 회원탈퇴
 export const deleteAccount = async (_request: Request, response: Response) => {
   try {
     const { memberId } = response.locals;
